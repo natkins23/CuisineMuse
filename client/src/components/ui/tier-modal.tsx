@@ -40,7 +40,10 @@ export function TierModal() {
               </ul>
             </div>
             <div className="border rounded-lg p-4 bg-green-50">
-              <h3 className="font-semibold mb-2">Pro Tier</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold">Pro Tier</h3>
+                <span className="text-sm font-medium text-green-700">$4/month</span>
+              </div>
               <ul className="space-y-2">
                 <li className="flex items-center gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 text-green-500" />
