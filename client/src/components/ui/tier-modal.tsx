@@ -22,7 +22,7 @@ export function TierModal() {
     <Dialog>
       <DialogTrigger className="text-sm text-neutral-600 hover:text-green-600 flex items-center gap-1">
         <div className="px-2 py-1 bg-neutral-100 rounded-full text-xs">
-          Free Tier ({recipes?.length || 0}/10 recipes)
+          Free Tier ({recipes?.length || 0}/3 recipes)
         </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

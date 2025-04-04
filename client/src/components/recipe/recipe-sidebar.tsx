@@ -49,7 +49,7 @@ export default function RecipeSidebar({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-neutral-800">My Saved Recipes</h2>
           <div className="text-sm bg-neutral-100 px-2 py-1 rounded">
-            {recipes.length}/10 recipes
+            {recipes.length}/3 recipes
           </div>
         </div>
         

@@ -328,7 +328,7 @@ export default function ChatInterface() {
         <div className="flex items-center gap-4">
           {currentUser && (
             <div className="text-sm bg-green-700 px-2 py-1 rounded">
-              {messages.filter(m => m.recipe).length}/10 generations
+              {messages.filter(m => m.recipe).length}/3 generations
             </div>
           )}
           <Button 
