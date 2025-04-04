@@ -1,4 +1,3 @@
-
 import { Recipe } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,31 +12,38 @@ interface RecipeSidebarProps {
   onDelete?: (recipeId: string) => void;
 }
 
-export default function RecipeSidebar({ 
-  recipes, 
+export default function RecipeSidebar({
+  recipes,
   isLoading,
   onRecipeSelect,
-  onDelete 
+  onDelete,
 }: RecipeSidebarProps) {
   if (isLoading) {
     return (
       <div className="p-4">
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-neutral-800">My Saved Recipes</h2>
-          {Array(3).fill(0).map((_, i) => (
-            <Card key={i} className="cursor-pointer hover:shadow-md transition-all">
-              <CardHeader className="p-4 pb-2">
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-3 w-1/2" />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="flex items-center justify-between text-sm text-neutral-500 mt-2">
-                  <Skeleton className="h-3 w-1/4" />
-                  <Skeleton className="h-3 w-1/4" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <h2 className="text-xl font-bold text-neutral-800">
+            My Saved Recipes
+          </h2>
+          {Array(3)
+            .fill(0)
+            .map((_, i) => (
+              <Card
+                key={i}
+                className="cursor-pointer hover:shadow-md transition-all"
+              >
+                <CardHeader className="p-4 pb-2">
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <div className="flex items-center justify-between text-sm text-neutral-500 mt-2">
+                    <Skeleton className="h-3 w-1/4" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
         </div>
       </div>
     );
@@ -47,12 +53,14 @@ export default function RecipeSidebar({
     <ScrollArea className="h-full">
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-neutral-800">My Saved Recipes</h2>
+          <h2 className="text-xl font-bold text-neutral-800">
+            My Saved Recipes
+          </h2>
           <div className="text-sm bg-neutral-100 px-2 py-1 rounded">
             {recipes.length}/3 recipes
           </div>
         </div>
-        
+
         {recipes.length === 0 ? (
           <div className="text-center py-8">
             <Utensils className="h-12 w-12 mx-auto text-neutral-300 mb-2" />
@@ -62,10 +70,12 @@ export default function RecipeSidebar({
             </p>
             <Button
               variant="outline"
-              onClick={() => window.scrollTo({ 
-                top: document.getElementById('try-it-out')?.offsetTop,
-                behavior: 'smooth'
-              })}
+              onClick={() =>
+                window.scrollTo({
+                  top: document.getElementById("try-it-out")?.offsetTop,
+                  behavior: "smooth",
+                })
+              }
             >
               Try Creating a Recipe
             </Button>
@@ -74,15 +84,31 @@ export default function RecipeSidebar({
           <div className="space-y-4">
             {recipes.map((recipe) => (
               <Card key={recipe.id} className="hover:shadow-md transition-all">
-                <div 
+                <div
                   className="cursor-pointer"
                   onClick={() => onRecipeSelect && onRecipeSelect(recipe)}
                 >
                   <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-base font-medium line-clamp-1">
-                      {recipe.title}
-                    </CardTitle>
-                    <p className="text-sm text-neutral-500 line-clamp-1">{recipe.description}</p>
+                    <div className=" flex justify-between">
+                      <CardTitle className="text-base font-medium line-clamp-1">
+                        {recipe.title}
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
+                        onClick={() => {
+                          if (onDelete && recipe.id) {
+                            onDelete(recipe.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-neutral-500 line-clamp-1">
+                      {recipe.description}
+                    </p>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
                     <div className="flex items-center justify-between text-sm text-neutral-500 mt-2">
@@ -96,20 +122,6 @@ export default function RecipeSidebar({
                       </div>
                     </div>
                   </CardContent>
-                </div>
-                <div className="px-4 pb-3 flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
-                    onClick={() => {
-                      if (onDelete && recipe.id) {
-                        onDelete(recipe.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               </Card>
             ))}
