@@ -107,24 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const result = await signInWithPopup(auth, provider);
         
-        // Verify user was properly saved
-        const email = result.user.email;
-        if (email) {
-          // Check if methods are properly registered
-          const methods = await fetchSignInMethodsForEmail(auth, email);
-          console.log("Auth methods after Google sign-in:", {
-            email,
-            methods,
-            isNewUser: result.additionalUserInfo?.isNewUser,
-            providerId: result.additionalUserInfo?.providerId,
-            providerData: result.user.providerData
-          });
+        // Verify user has Google provider linked
+        const linkedProviders = result.user.providerData.map(p => p.providerId);
+        console.log("Linked providers after Google sign-in:", {
+          email: result.user.email,
+          linkedProviders,
+          isNewUser: result.additionalUserInfo?.isNewUser,
+          providerData: result.user.providerData
+        });
 
-          // If methods don't include google.com, something went wrong
-          if (!methods.includes('google.com')) {
-            console.error("Google auth method not properly registered");
-            throw new Error("Authentication error - provider not registered");
-          }
+        if (!linkedProviders.includes('google.com')) {
+          console.error("Google auth method not properly registered");
+          throw new Error("Authentication error - Google provider not linked");
         }
 
         // Verify the user is properly persisted
