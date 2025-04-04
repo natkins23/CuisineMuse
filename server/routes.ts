@@ -184,12 +184,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         let emailToUse = validatedData.data.email;
+        console.log('Original email:', emailToUse);
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+        console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
+        
         if (emailToUse.endsWith('@example.com') || !emailToUse.includes('@') || process.env.NODE_ENV === 'development') {
           console.log('Using test email for Resend in development environment');
           emailToUse = 'delivered@resend.dev';
         }
+        console.log('Final email to use:', emailToUse);
 
         const emailSent = await sendTestEmail(emailToUse);
+        console.log('Email send attempt response:', emailSent);
         if (!emailSent) {
           throw new Error('Email sending failed');
         }
