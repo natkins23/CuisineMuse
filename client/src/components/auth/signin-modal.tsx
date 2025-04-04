@@ -168,6 +168,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       const methods = await fetchSignInMethodsForEmail(auth, email);
 
       if (!isSignUp) {
+        // Sign In flow
         if (methods.includes("google.com")) {
           setError("This account uses Google Sign-In. Please use that option.");
           return;
@@ -177,7 +178,14 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           setError("No account found with this email. Please sign up or try Google Sign-In.");
           return;
         }
+
+        // Check specifically for password authentication method
+        if (!methods.includes("password")) {
+          setError("No email/password account found. Please sign up or use Google.");
+          return;
+        }
       } else {
+        // Sign Up flow
         if (methods.length > 0) {
           if (methods.includes("google.com")) {
             setError("This email is already used with Google Sign-In. Please use that option.");
@@ -205,10 +213,21 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
       onOpenChange(false);
     } catch (error: any) {
+      console.error("Email auth error:", error.code, error.message);
       if (error.code === 'auth/wrong-password') {
         setError("Incorrect password. Please try again.");
+      } else if (error.code === 'auth/user-not-found') {
+        setError("No account found with this email. Please sign up first.");
+      } else if (error.code === 'auth/invalid-credential') {
+        setError("Invalid login credentials. Please check your email and password.");
       } else if (error.code === 'auth/too-many-requests') {
         setError("Too many attempts. Please try again later.");
+      } else if (error.code === 'auth/invalid-email') {
+        setError("Invalid email format. Please enter a valid email address.");
+      } else if (error.code === 'auth/weak-password' && isSignUp) {
+        setError("Password is too weak. Please use at least 6 characters.");
+      } else if (error.code === 'auth/email-already-in-use' && isSignUp) {
+        setError("Email is already in use. Please sign in instead.");
       } else {
         setError(error.message || "An unexpected error occurred.");
       }
