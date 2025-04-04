@@ -106,10 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Try popup first (for modal dialog)
       try {
         const result = await signInWithPopup(auth, provider);
-        
-        // Verify user has Google provider linked
+
+        // Verify Google provider is linked by checking providerData
         const linkedProviders = result.user.providerData.map(p => p.providerId);
-        console.log("Linked providers after Google sign-in:", {
+        console.log("Auth providers after Google sign-in:", {
           email: result.user.email,
           linkedProviders,
           isNewUser: result.additionalUserInfo?.isNewUser,
@@ -117,13 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (!linkedProviders.includes('google.com')) {
-          console.error("Google auth method not properly registered");
+          console.error("Google provider not linked properly");
           throw new Error("Authentication error - Google provider not linked");
         }
-
-        // Verify the user is properly persisted
-        const methods = await fetchSignInMethodsForEmail(auth, result.user.email!);
-        console.log("Auth methods after Google sign-in:", methods);
 
         return result;
       } catch (popupError: any) {
