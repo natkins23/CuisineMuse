@@ -1,3 +1,4 @@
+
 import { Recipe } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,7 +16,8 @@ interface RecipeSidebarProps {
 export default function RecipeSidebar({ 
   recipes, 
   isLoading,
-  onRecipeSelect 
+  onRecipeSelect,
+  onDelete 
 }: RecipeSidebarProps) {
   if (isLoading) {
     return (
@@ -73,31 +75,31 @@ export default function RecipeSidebar({
                   className="cursor-pointer"
                   onClick={() => onRecipeSelect && onRecipeSelect(recipe)}
                 >
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-base font-medium line-clamp-1">
-                    {recipe.title}
-                  </CardTitle>
-                  <p className="text-sm text-neutral-500 line-clamp-1">{recipe.description}</p>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="flex items-center justify-between text-sm text-neutral-500 mt-2">
-                    <div className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span>{recipe.prepTime} min</span>
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-base font-medium line-clamp-1">
+                      {recipe.title}
+                    </CardTitle>
+                    <p className="text-sm text-neutral-500 line-clamp-1">{recipe.description}</p>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-center justify-between text-sm text-neutral-500 mt-2">
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>{recipe.prepTime} min</span>
+                      </div>
+                      <div className="flex items-center">
+                        <User className="h-3 w-3 mr-1" />
+                        <span>{recipe.servings} servings</span>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <User className="h-3 w-3 mr-1" />
-                      <span>{recipe.servings} servings</span>
-                    </div>
-                  </div>
-                </CardContent>
+                  </CardContent>
+                </div>
                 <div className="px-4 pb-3 flex justify-end">
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       if (onDelete && recipe.id) {
                         onDelete(recipe.id);
                       }
