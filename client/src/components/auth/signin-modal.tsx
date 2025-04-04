@@ -28,12 +28,16 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       // Send welcome email to new users
       if (userCredential.user?.email) {
         try {
+          const displayName = userCredential.user.displayName || 'there';
           await fetch('/api/email/test', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email: userCredential.user.email })
+            body: JSON.stringify({ 
+              email: userCredential.user.email,
+              name: displayName
+            })
           });
         } catch (emailError) {
           console.error("Failed to send welcome email:", emailError);
