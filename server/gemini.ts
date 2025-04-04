@@ -249,6 +249,13 @@ export interface GeneratedRecipe {
 /**
  * Generate a recipe using Google's Gemini AI
  */
+// Track successful recipe generations
+let successfulGenerations = 0;
+
+export function getSuccessfulGenerations() {
+  return successfulGenerations;
+}
+
 export async function generateRecipe(options: RecipeGenerationOptions): Promise<GeneratedRecipe> {
   try {
     // Default values
@@ -296,7 +303,7 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
     const recipeData = JSON.parse(jsonMatch[0]);
     
     // Ensure we have all required fields
-    return {
+    const recipe = {
       title: recipeData.title || "Untitled Recipe",
       description: recipeData.description || "No description provided",
       ingredients: recipeData.ingredients || "No ingredients provided",
@@ -305,6 +312,12 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
       prepTime: parseInt(recipeData.prepTime) || 30,
       servings: parseInt(recipeData.servings) || 4
     };
+    
+    // Increment successful generations counter
+    successfulGenerations++;
+    console.log(`Successfully generated recipe #${successfulGenerations}`);
+    
+    return recipe;
   } catch (error) {
     console.error("Error generating recipe with Gemini:", error);
     throw new Error("Failed to generate recipe. Please try again.");

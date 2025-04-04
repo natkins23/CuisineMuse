@@ -130,6 +130,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate recipe using Google Gemini - with stricter rate limiting
+  // Get successful generations count
+  app.get("/api/generations", (req: Request, res: Response) => {
+    const count = getSuccessfulGenerations();
+    res.json({ count });
+  });
+
   app.post("/api/generate-recipe", aiLimiter, async (req: Request, res: Response) => {
     try {
       const { prompt, mealType, mainIngredient, dietary } = req.body;
