@@ -84,15 +84,15 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     
     // Generate content using Gemini Pro
     const result = await chatModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease provide a single detailed recipe suggestion in your response with:
-- A creative title
-- Cooking time (in minutes)
-- A relevant image URL from Unsplash
-- A brief description
-- A list of ingredients
-- Step-by-step instructions
+      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nProvide a recipe with minimal commentary. Focus on clearly listing ingredients and instructions. Include:
+- Title
+- Cooking time
+- Image URL from Unsplash
+- Only a 1-2 sentence description
+- Complete list of ingredients with measurements
+- Clear step-by-step instructions
 
-First, respond to the user's query in your charming Chef Pierre persona. Then include the recipe in valid JSON format as follows:
+Keep your initial response very brief, then include complete recipe details in valid JSON format:
 
 {
   "recipe": {
@@ -100,13 +100,13 @@ First, respond to the user's query in your charming Chef Pierre persona. Then in
     "cooking_time": "30 minutes",
     "image_url": "https://unsplash.com/photos/relevant-image",
     "description": "Brief description of the dish",
-    "ingredients": ["Ingredient 1", "Ingredient 2", "Ingredient 3"],
-    "instructions": ["Step 1", "Step 2", "Step 3"],
+    "ingredients": ["Ingredient 1 with quantity", "Ingredient 2 with quantity", "Ingredient 3 with quantity"],
+    "instructions": ["Step 1 with clear instruction", "Step 2 with clear instruction", "Step 3 with clear instruction"],
     "servings": "4 servings"
   }
 }
 
-Make sure your response includes both the conversational text AND the JSON recipe data.`}] }],
+Your response MUST include both your brief text answer AND the complete recipe JSON data.`}] }],
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1500,
@@ -206,24 +206,23 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
     const mainIngredient = options.mainIngredient || "any ingredients";
     const dietary = options.dietary ? `with ${options.dietary} dietary restrictions` : "with no specific dietary restrictions";
     
-    // Construct a detailed prompt for better recipe generation
-    const fullPrompt = `You are Chef Pierre, a French master chef with expertise in creating delicious recipes.
-    Create a detailed recipe for a ${mealType} using ${mainIngredient} ${dietary}.
+    // Construct a direct, focused prompt for recipe generation
+    const fullPrompt = `Create a direct, practical recipe for a ${mealType} using ${mainIngredient} ${dietary}.
     
     The user's specific request is: "${options.prompt}"
     
-    Please provide a complete recipe with the following structure:
-    - A creative French-inspired title for the dish
-    - A brief description of the dish (2-3 sentences) with a touch of French flair
-    - List of ingredients with measurements
-    - Step by step cooking instructions that include some French cooking techniques
+    Provide a complete recipe with:
+    - A simple title
+    - A brief 1-2 sentence description
+    - Complete list of ingredients with precise measurements
+    - Clear step-by-step instructions with no extra commentary
     - Estimated preparation time in minutes
     - Number of servings
     
-    Format your response as a structured JSON object with these fields:
+    Format your response as a structured JSON object:
     {
       "title": "Recipe Title",
-      "description": "Brief description of the dish",
+      "description": "Brief description",
       "ingredients": "Complete ingredients list with measurements",
       "instructions": "Step by step cooking instructions",
       "mealType": "${mealType}",
