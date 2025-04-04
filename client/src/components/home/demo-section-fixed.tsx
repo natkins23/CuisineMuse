@@ -301,8 +301,6 @@ export default function DemoSection() {
                         <div className="flex flex-wrap gap-2">
                           {proteinSuggestions.map((protein, index) => {
                             const isSelected = selectedProtein === protein;
-                            // If a protein is selected, only show selected one with normal opacity
-                            const shouldDisplay = !selectedProtein || isSelected;
                             
                             return (
                               <motion.div
@@ -330,8 +328,6 @@ export default function DemoSection() {
                         <div className="flex flex-wrap gap-2">
                           {dietarySuggestions.map((dietary, index) => {
                             const isSelected = selectedDietary === dietary;
-                            // If dietary preference is selected, only show selected one with normal opacity
-                            const shouldDisplay = !selectedDietary || isSelected;
                             
                             return (
                               <motion.div
@@ -386,8 +382,6 @@ export default function DemoSection() {
                         <div className="flex flex-wrap gap-2">
                           {timeSuggestions.map((time, index) => {
                             const isSelected = selectedTimeOption === time;
-                            // If time option is selected, only show selected one with normal opacity
-                            const shouldDisplay = !selectedTimeOption || isSelected;
                             
                             return (
                               <motion.div
