@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreVertical, Clock, Users } from "lucide-react";
+import { MoreVertical, Clock, Users, BookmarkPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Recipe } from "@shared/schema";
 
 interface RecipeCardProps {
