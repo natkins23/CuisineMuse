@@ -9,8 +9,9 @@ import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit"
 import { sendRecipeEmail, sendTestEmail } from "./email";
 import { z } from "zod";
 
-// Use Firestore storage instead of in-memory storage
-const db = firestoreStorage;
+// Use in-memory storage instead of Firestore to avoid permission issues
+// const db = firestoreStorage;
+const db = storage; // Using in-memory storage for simplicity
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply default rate limiting to all API routes
