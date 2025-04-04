@@ -75,6 +75,104 @@ export default function RecipeSidebar({
     );
   }
 
+  const mockRecipes = [
+    {
+      id: '1',
+      title: 'Mediterranean Quinoa Bowl',
+      description: 'A vibrant and nutritious bowl featuring quinoa, fresh vegetables, and Mediterranean flavors',
+      prepTime: 25,
+      servings: 2,
+      ingredients: [
+        '1 cup quinoa',
+        '2 cups vegetable broth',
+        '1 cucumber, diced',
+        '2 cups cherry tomatoes, halved',
+        '1 red onion, finely chopped',
+        '1 cup kalamata olives',
+        '200g feta cheese, crumbled',
+        '2 tbsp olive oil',
+        '1 lemon, juiced',
+        'Fresh parsley and mint',
+        'Salt and pepper to taste'
+      ],
+      instructions: [
+        'Rinse quinoa and cook in vegetable broth according to package instructions',
+        'While quinoa cooks, prepare all vegetables',
+        'In a large bowl, combine cooked quinoa with diced cucumber, tomatoes, and red onion',
+        'Add kalamata olives and crumbled feta cheese',
+        'Drizzle with olive oil and lemon juice',
+        'Season with salt and pepper',
+        'Garnish with fresh herbs and serve'
+      ],
+      mealType: 'Lunch',
+      isSaved: true
+    },
+    {
+      id: '2',
+      title: 'Classic Beef Bourguignon',
+      description: 'Traditional French beef stew braised in red wine with mushrooms and pearl onions',
+      prepTime: 180,
+      servings: 6,
+      ingredients: [
+        '1kg beef chuck, cut into chunks',
+        '200g bacon lardons',
+        '24 pearl onions',
+        '500g mushrooms',
+        '750ml red wine (Burgundy)',
+        '2 carrots, sliced',
+        '1 onion, diced',
+        '3 cloves garlic, minced',
+        '2 tbsp tomato paste',
+        '1 bouquet garni (thyme, parsley, bay leaf)',
+        'Salt and pepper to taste'
+      ],
+      instructions: [
+        'Brown the beef chunks in batches, set aside',
+        'Cook bacon lardons until crispy, remove from pot',
+        'Sauté pearl onions and mushrooms, set aside',
+        'Cook diced onion, carrots, and garlic in the same pot',
+        'Add tomato paste and cook for 1 minute',
+        'Return beef to pot, add wine and bouquet garni',
+        'Simmer for 2.5 hours until beef is tender',
+        'Add reserved bacon, onions, and mushrooms',
+        'Cook for additional 30 minutes',
+        'Season to taste and serve hot'
+      ],
+      mealType: 'Dinner',
+      isSaved: true
+    },
+    {
+      id: '3',
+      title: 'Lemon Lavender Shortbread',
+      description: 'Delicate shortbread cookies infused with fresh lemon zest and dried lavender',
+      prepTime: 45,
+      servings: 24,
+      ingredients: [
+        '250g butter, softened',
+        '120g powdered sugar',
+        '280g all-purpose flour',
+        '1/4 tsp salt',
+        '2 tbsp lemon zest',
+        '1 tbsp dried culinary lavender',
+        '1 tsp vanilla extract',
+        'Additional powdered sugar for dusting'
+      ],
+      instructions: [
+        'Cream butter and powdered sugar until light and fluffy',
+        'Add vanilla extract and lemon zest',
+        'Gradually mix in flour and salt',
+        'Fold in dried lavender',
+        'Roll dough into a log and chill for 30 minutes',
+        'Preheat oven to 350°F (175°C)',
+        'Slice dough into 1/4 inch rounds',
+        'Bake for 12-15 minutes until edges are lightly golden',
+        'Cool completely and dust with powdered sugar'
+      ],
+      mealType: 'Dessert',
+      isSaved: true
+    }
+  ];
+
   return (
     <ScrollArea className="h-full">
       <div className="p-4">
@@ -108,7 +206,7 @@ export default function RecipeSidebar({
           </div>
         ) : (
           <div className="space-y-4">
-            {recipes.map((recipe) => (
+            {mockRecipes.map((recipe) => ( // Changed to use mockRecipes
               <Card key={recipe.id} className="hover:shadow-md transition-all">
                 <div
                   className="cursor-pointer"
