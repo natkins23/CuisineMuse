@@ -123,6 +123,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       }
 
       onOpenChange(false);
+      window.location.href = '/my-recipes'; // Redirect after successful Google sign-in
     } catch (error: any) {
       console.error("Error during sign in:", error);
       if (error.code === "auth/unauthorized-domain") {
@@ -180,7 +181,10 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
       setIsSigningIn(true);
       const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
-      const userCredential = await authFunction(email, password);
+      await authFunction(email, password);
+
+      onOpenChange(false);
+      window.location.href = '/my-recipes'; // Redirect after successful email sign-in
 
       if (isSignUp && userCredential?.user?.email) {
         await fetch('/api/email/test', {
@@ -192,8 +196,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           }),
         });
       }
-
-      onOpenChange(false);
     } catch (error: any) {
       console.error("Email auth error:", error.code, error.message);
       if (error.code === 'auth/wrong-password') {
