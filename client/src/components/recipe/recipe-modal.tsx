@@ -32,9 +32,12 @@ export default function RecipeModal({
   
   const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
 
-  const handleDelete = () => {
-    onDelete?.(recipe.id);
-    onClose();
+  const handleDelete = async () => {
+    if (onDelete && recipe.id) {
+      await onDelete(recipe.id);
+      setShowDeleteAlert(false);
+      onClose();
+    }
   };
 
   return (
