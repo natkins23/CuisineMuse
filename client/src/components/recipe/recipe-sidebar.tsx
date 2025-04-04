@@ -13,21 +13,7 @@ interface RecipeSidebarProps {
   onDelete?: (recipeId: string) => void;
 }
 
-// RecipeModal component
-const RecipeModal = ({ recipe, isOpen, onClose }: { recipe: Recipe; isOpen: boolean; onClose: () => void }) => {
-  if (!isOpen || !recipe) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4">{recipe.title}</h2>
-        <p>{recipe.description}</p>
-        {/* Add other recipe details here */}
-        <button onClick={onClose} className="mt-4 px-4 py-2 bg-gray-800 text-white rounded">Close</button>
-      </div>
-    </div>
-  );
-};
+import RecipeModal from "./recipe-modal";
 
 
 export default function RecipeSidebar({
