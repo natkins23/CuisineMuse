@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Recipe } from "@shared/schema";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
