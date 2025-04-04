@@ -92,6 +92,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </CardContent>
     </Card>
-    {showSignInModal && <SignInModal onClose={() => setShowSignInModal(false)} />}
+    <SignInModal open={showSignInModal} onOpenChange={setShowSignInModal} />
   );
 }
