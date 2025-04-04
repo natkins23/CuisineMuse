@@ -130,17 +130,26 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         setShowSetupInstructions(true);
       } else {
         // Map Firebase error codes to user-friendly messages
-      const errorMessage = {
-        'auth/invalid-credential': 'These credentials do not exist. Please try again or sign up.',
-        'auth/user-disabled': 'This account has been disabled.',
-        'auth/user-not-found': 'These credentials do not exist. Please try again or sign up.',
-        'auth/wrong-password': 'These credentials do not exist. Please try again or sign up.',
-        'auth/too-many-requests': 'Too many attempts. Please try again later.',
-        'auth/popup-closed-by-user': 'Sign in was cancelled.',
-        'auth/unauthorized-domain': 'This domain is not authorized for sign in.',
-      }[error.code] || 'An error occurred. Please try again.';
-
-      setError(errorMessage);
+        let errorMessage = 'An error occurred. Please try again.';
+        
+        // Use explicit conditional checks instead of object lookup to avoid TypeScript issues
+        if (error.code === 'auth/invalid-credential') {
+          errorMessage = 'These credentials do not exist. Please try again or sign up.';
+        } else if (error.code === 'auth/user-disabled') {
+          errorMessage = 'This account has been disabled.';
+        } else if (error.code === 'auth/user-not-found') {
+          errorMessage = 'These credentials do not exist. Please try again or sign up.';
+        } else if (error.code === 'auth/wrong-password') {
+          errorMessage = 'These credentials do not exist. Please try again or sign up.';
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'Too many attempts. Please try again later.';
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = 'Sign in was cancelled.';
+        } else if (error.code === 'auth/unauthorized-domain') {
+          errorMessage = 'This domain is not authorized for sign in.';
+        }
+        
+        setError(errorMessage);
       }
     } finally {
       setIsSigningIn(false);
@@ -151,62 +160,27 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     try {
       setError(null);
       const isValid = await form.trigger();
-      if (!isValid) {
-        return;
-      }
+      if (!isValid) return;
 
       const { email: rawEmail, password } = form.getValues();
-      const email = rawEmail.toLowerCase().trim();
+      const email = rawEmail.trim().toLowerCase();
 
-      // Ensure auth is initialized
-      if (!auth.app) {
-        throw new Error("Firebase Auth not initialized");
-      }
-
-      // Wait for auth initialization
-      await new Promise<void>((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, () => {
-          unsubscribe();
-          resolve();
-        });
-      });
-
-      console.log("Checking auth methods for email:", email, "with auth config:", {
-        projectId: auth.app.options.projectId,
-        apiKey: auth.app.options.apiKey ? "present" : "missing"
-      });
-
-      // Check both client and server side
-      const [clientMethods, serverResponse] = await Promise.all([
-        fetchSignInMethodsForEmail(auth, email),
-        fetch(`/api/debug/auth-methods?email=${encodeURIComponent(email)}`).then(r => r.json()).catch(() => null)
-      ]);
-
-      console.log("Auth validation:", {
-        email,
-        clientMethods,
-        serverProviders: serverResponse?.providers,
-        serverMetadata: serverResponse?.metadata
-      });
-
-      // Use server response as source of truth if available
-      const methods = serverResponse?.providers || clientMethods;
+      const methods = await fetchSignInMethodsForEmail(auth, email);
 
       if (!isSignUp) {
-        // Sign In flow
-        if (methods.includes('google.com')) {
-          setError("This account uses Google Sign-In. Please use that option instead.");
+        if (methods.includes("google.com")) {
+          setError("This account uses Google Sign-In. Please use that option.");
           return;
         }
+
         if (methods.length === 0) {
-          setError("No account found with this email. Please sign up first.");
+          setError("No account found with this email. Please sign up or try Google Sign-In.");
           return;
         }
       } else {
-        // Sign Up flow
         if (methods.length > 0) {
-          if (methods.includes('google.com')) {
-            setError("This email is already used with Google Sign-In. Please use that option instead.");
+          if (methods.includes("google.com")) {
+            setError("This email is already used with Google Sign-In. Please use that option.");
           } else {
             setError("An account already exists with this email. Please sign in instead.");
           }
@@ -219,34 +193,24 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       const userCredential = await authFunction(email, password);
 
       if (isSignUp && userCredential?.user?.email) {
-        try {
-          await fetch('/api/email/test', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              email: userCredential.user.email,
-              name: email.split('@')[0]
-            })
-          });
-        } catch (emailError) {
-          console.error("Failed to send welcome email:", emailError);
-        }
+        await fetch('/api/email/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userCredential.user.email,
+            name: userCredential.user.email.split('@')[0],
+          }),
+        });
       }
 
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error during email auth:", error);
-
-      if (error.message?.includes("Firebase Auth not initialized")) {
-        setError("Authentication service not ready. Please try again.");
-      } else if (error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/wrong-password') {
         setError("Incorrect password. Please try again.");
       } else if (error.code === 'auth/too-many-requests') {
         setError("Too many attempts. Please try again later.");
       } else {
-        setError(error.message || "An error occurred during authentication");
+        setError(error.message || "An unexpected error occurred.");
       }
     } finally {
       setIsSigningIn(false);

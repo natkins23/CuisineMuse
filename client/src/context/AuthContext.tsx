@@ -9,7 +9,8 @@ import {
   getRedirectResult,
   signOut, 
   onAuthStateChanged,
-  fetchSignInMethodsForEmail
+  fetchSignInMethodsForEmail,
+  UserCredential
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,8 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<any>;
+  signInWithEmail: (email: string, password: string) => Promise<UserCredential>;
+  signUpWithEmail: (email: string, password: string) => Promise<UserCredential>;
   logOut: () => Promise<void>;
 }
 
@@ -75,74 +78,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Sign in with Google
+  // Sign in with Google - improved version
   async function signInWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
-
-      // Add scopes if needed
       provider.addScope('email');
-      provider.addScope('profile');
+      provider.setCustomParameters({ prompt: 'select_account' });
 
-      console.log("Initializing Google Sign-In with:", {
-        providerId: provider.providerId,
-        customParameters: provider.customParameters,
-        scopes: provider.scopes,
-        projectId: auth.app.options.projectId
-      });
+      const result = await signInWithPopup(auth, provider);
 
-      // Handle unauthorized domain error
-      // This is a temporary solution to show user what they need to do
-      // Ideally, the domain should be added to authorized domains in Firebase Console
-      const currentDomain = window.location.origin;
+      const linkedProviders = result.user.providerData.map(p => p.providerId);
+      if (!linkedProviders.includes("google.com")) {
+        throw new Error("Google provider not linked properly.");
+      }
 
-      // Set custom parameters
-      provider.setCustomParameters({
-        prompt: 'select_account',
-        // The 'login_hint' parameter can help prevent the "illegal URL for new iframe" error
-        login_hint: 'user@example.com'
-      });
-
-      // Try popup first (for modal dialog)
-      try {
-        const result = await signInWithPopup(auth, provider);
-
-        // Verify Google provider is linked by checking providerData
-        const linkedProviders = result.user.providerData.map(p => p.providerId);
-        console.log("Auth providers after Google sign-in:", {
-          email: result.user.email,
-          linkedProviders,
-          isNewUser: result.additionalUserInfo?.isNewUser,
-          providerData: result.user.providerData
+      // Check if this is a new user by comparing creation time with last sign-in time
+      if (result.user.email && 
+          result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+        await fetch('/api/email/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: result.user.email,
+            name: result.user.displayName || 'there',
+          }),
         });
+      }
 
-        if (!linkedProviders.includes('google.com')) {
-          console.error("Google provider not linked properly");
-          throw new Error("Authentication error - Google provider not linked");
-        }
-
-        return result;
-      } catch (popupError: any) {
-        console.warn("Popup sign in failed, trying redirect:", popupError);
-
-        // If popup fails (common on mobile or with popup blockers), fall back to redirect
-        if (popupError.code === 'auth/popup-blocked' || 
-            popupError.code === 'auth/popup-closed-by-user' ||
-            popupError.message?.includes('iframe')) {
-          // Use redirect as fallback
+      return result;
+    } catch (error: any) {
+      console.error("Google Sign-In failed:", error);
+      
+      // If popup fails, try redirect as fallback
+      if (error.code === 'auth/popup-blocked' || 
+          error.code === 'auth/popup-closed-by-user' ||
+          error.message?.includes('iframe')) {
+        try {
+          const provider = new GoogleAuthProvider();
+          provider.addScope('email');
+          provider.setCustomParameters({ prompt: 'select_account' });
           await signInWithRedirect(auth, provider);
           return null; // The redirect will reload the page
+        } catch (redirectError) {
+          console.error("Redirect sign-in also failed:", redirectError);
+          throw new Error("Failed to sign in with Google.");
         }
-        throw popupError; // Re-throw if it's not a popup issue
       }
-    } catch (error: any) {
-      console.error("Error signing in with Google:", error);
+      
       toast({
         variant: "destructive",
         title: "Authentication failed",
         description: error?.message || "Failed to sign in with Google",
       });
-      throw error; // Re-throw to handle in the component
+      throw new Error("Failed to sign in with Google.");
     }
   }
 

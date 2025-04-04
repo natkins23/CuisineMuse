@@ -1,0 +1,113 @@
+Please update the authentication logic to use this production-ready implementation for email/password login and Google sign-in.
+
+These changes:
+
+Remove any use of setTimeout or delayed fetchSignInMethodsForEmail
+
+Use Firebase best practices (providerData for Google login, fetchSignInMethodsForEmail for email login)
+
+Provide user-friendly error messages
+
+Clean up conditional logic
+
+✅ Replace the handleEmailSignIn function with:
+
+ts
+Copy
+Edit
+const handleEmailSignIn = async (isSignUp: boolean = false) => {
+  try {
+    setError(null);
+    const isValid = await form.trigger();
+    if (!isValid) return;
+
+    const { email: rawEmail, password } = form.getValues();
+    const email = rawEmail.trim().toLowerCase();
+
+    const methods = await fetchSignInMethodsForEmail(auth, email);
+
+    if (!isSignUp) {
+      if (methods.includes("google.com")) {
+        setError("This account uses Google Sign-In. Please use that option.");
+        return;
+      }
+
+      if (methods.length === 0) {
+        setError("No account found with this email. Please sign up or try Google Sign-In.");
+        return;
+      }
+    } else {
+      if (methods.length > 0) {
+        if (methods.includes("google.com")) {
+          setError("This email is already used with Google Sign-In. Please use that option.");
+        } else {
+          setError("An account already exists with this email. Please sign in instead.");
+        }
+        return;
+      }
+    }
+
+    setIsSigningIn(true);
+    const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
+    const userCredential = await authFunction(email, password);
+
+    if (isSignUp && userCredential?.user?.email) {
+      await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          name: userCredential.user.email.split('@')[0],
+        }),
+      });
+    }
+
+    onOpenChange(false);
+  } catch (error: any) {
+    if (error.code === 'auth/wrong-password') {
+      setError("Incorrect password. Please try again.");
+    } else if (error.code === 'auth/too-many-requests') {
+      setError("Too many attempts. Please try again later.");
+    } else {
+      setError(error.message || "An unexpected error occurred.");
+    }
+  } finally {
+    setIsSigningIn(false);
+  }
+};
+✅ Also, replace the signInWithGoogle function with this version:
+
+ts
+Copy
+Edit
+async function signInWithGoogle() {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    const result = await signInWithPopup(auth, provider);
+
+    const linkedProviders = result.user.providerData.map(p => p.providerId);
+    if (!linkedProviders.includes("google.com")) {
+      throw new Error("Google provider not linked properly.");
+    }
+
+    if (result.user.email && result.additionalUserInfo?.isNewUser) {
+      await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: result.user.email,
+          name: result.user.displayName || 'there',
+        }),
+      });
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error("Google Sign-In failed:", error);
+    throw new Error("Failed to sign in with Google.");
+  }
+}
+These changes make both login paths reliable, user-friendly, and production-ready. Let me know if you'd like help integrating this directly into your modal flow.
