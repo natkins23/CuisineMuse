@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "wouter";
 import { Recipe } from "@shared/schema";
@@ -13,6 +14,7 @@ export default function MyRecipes() {
   const { currentUser, loading } = useAuth();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const queryClient = useQueryClient();
   
   // Redirect to home if not logged in
   useEffect(() => {
@@ -92,8 +94,6 @@ export default function MyRecipes() {
             }}
           />
         </aside>
-          </div>
-        </main>
       </div>
     </div>
   );
