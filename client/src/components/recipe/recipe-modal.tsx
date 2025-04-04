@@ -38,7 +38,7 @@ export default function RecipeModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] sm:max-w-[80vw] h-[90vh] flex flex-col px-4 sm:px-8 py-4 [&>button]:hidden">
         <DialogTitle className="sr-only">{recipe.title}</DialogTitle>
         <div className="overflow-y-auto flex-1">
