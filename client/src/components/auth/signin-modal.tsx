@@ -156,37 +156,36 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       }
 
       const { email, password } = form.getValues();
+      
+      // Check authentication methods for email
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      console.log("Auth methods found for", email, ":", methods);
 
-      try {
-        // Check authentication methods for email
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        console.log("Auth methods found for", email, ":", methods);
-
-        if (!isSignUp) {
-          // Sign In flow
-          if (methods.includes('google.com')) {
-            setError("This account uses Google Sign-In. Please use that option instead.");
-            return;
-          }
-          if (methods.length === 0) {
-            setError("No account found with this email. Please sign up first.");
-            return;
-          }
-        } else {
-          // Sign Up flow
-          if (methods.length > 0) {
-            if (methods.includes('google.com')) {
-              setError("This email is already used with Google Sign-In. Please use that option instead.");
-            } else {
-              setError("An account already exists with this email. Please sign in instead.");
-            }
-            return;
-          }
+      if (!isSignUp) {
+        // Sign In flow
+        if (methods.includes('google.com')) {
+          setError("This account uses Google Sign-In. Please use that option instead.");
+          return;
         }
+        if (methods.length === 0) {
+          setError("No account found with this email. Please sign up first.");
+          return;
+        }
+      } else {
+        // Sign Up flow
+        if (methods.length > 0) {
+          if (methods.includes('google.com')) {
+            setError("This email is already used with Google Sign-In. Please use that option instead.");
+          } else {
+            setError("An account already exists with this email. Please sign in instead.");
+          }
+          return;
+        }
+      }
 
-        setIsSigningIn(true);
-        const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
-        const userCredential = await authFunction(email, password);
+      setIsSigningIn(true);
+      const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
+      const userCredential = await authFunction(email, password);
 
       if (isSignUp && userCredential?.user?.email) {
         try {
