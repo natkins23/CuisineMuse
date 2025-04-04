@@ -157,6 +157,25 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
       const { email, password } = form.getValues();
 
+      // Check if email exists and how it's authenticated
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      console.log("Auth methods for email:", methods);
+
+      if (methods.includes('google.com')) {
+        setError("This email is associated with a Google account. Please sign in with Google.");
+        return;
+      }
+
+      if (!isSignUp && methods.length === 0) {
+        setError("No account found with this email. Please sign up.");
+        return;
+      }
+
+      if (isSignUp && methods.length > 0) {
+        setError("An account already exists with this email. Please sign in.");
+        return;
+      }
+
       setIsSigningIn(true);
       const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
       const userCredential = await authFunction(email, password);
