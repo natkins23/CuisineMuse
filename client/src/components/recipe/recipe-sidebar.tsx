@@ -4,7 +4,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, User, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from 'react'; // Added import for useState
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RecipeSidebarProps {
   recipes: Recipe[];
@@ -24,6 +34,7 @@ export default function RecipeSidebar({
 }: RecipeSidebarProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRecipeForDelete, setSelectedRecipeForDelete] = useState<Recipe | null>(null);
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -209,9 +220,7 @@ export default function RecipeSidebar({
                         className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
                         onClick={(e) => {
                         e.stopPropagation();
-                        if (onDelete && recipe.id && confirm('Are you sure you want to delete this recipe?')) {
-                          onDelete(recipe.id);
-                        }
+                        setSelectedRecipeForDelete(recipe);
                       }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -244,6 +253,31 @@ export default function RecipeSidebar({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+
+      <AlertDialog open={!!selectedRecipeForDelete} onOpenChange={() => setSelectedRecipeForDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{selectedRecipeForDelete?.title}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                if (onDelete && selectedRecipeForDelete?.id) {
+                  onDelete(selectedRecipeForDelete.id);
+                  setSelectedRecipeForDelete(null);
+                }
+              }} 
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete Recipe
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ScrollArea>
   );
 }
