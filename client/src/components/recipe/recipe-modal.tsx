@@ -4,6 +4,16 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RecipeModalProps {
   recipe: Recipe | null;
