@@ -36,17 +36,17 @@ function CheckEmailExists({ email, onGoogleSignIn }: { email: string; onGoogleSi
 
   if (authMethods.includes('google.com')) {
     return (
-      <>
-        This email is associated with a Google account.
-        <br />
+      <div className="space-y-2">
+        <div className="text-destructive">This account uses Google authentication.</div>
         <Button 
-          variant="link" 
-          className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
+          variant="outline"
+          className="w-full"
           onClick={onGoogleSignIn}
         >
-          Sign in with Google instead
+          <SiGoogle className="h-5 w-5 mr-2 text-red-500" />
+          Continue with Google
         </Button>
-      </>
+      </div>
     );
   }
 
