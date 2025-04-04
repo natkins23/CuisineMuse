@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,24 +76,18 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     try {
       setError(null);
       
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email) {
-        setError("Please enter your email address");
-        return;
-      }
-      if (!emailRegex.test(email)) {
-        setError("Please enter a valid email address");
-        return;
-      }
+      const authSchema = z.object({
+        email: z.string().email("Please enter a valid email address"),
+        password: z.string().min(1, "Please enter your password")
+          .refine(val => !isSignUp || val.length >= 6, {
+            message: "Password must be at least 6 characters long"
+          })
+      });
       
-      // Password validation
-      if (!password) {
-        setError("Please enter your password");
-        return;
-      }
-      if (isSignUp && password.length < 6) {
-        setError("Password must be at least 6 characters long");
+      const result = authSchema.safeParse({ email, password });
+      
+      if (!result.success) {
+        setError(result.error.errors[0].message);
         return;
       }
       
