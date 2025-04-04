@@ -84,25 +84,29 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     
     // Generate content using Gemini Pro
     const result = await chatModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease include 3 recipe suggestions in your response, each with:
-- A title
+      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease provide a single detailed recipe suggestion in your response with:
+- A creative title
 - Cooking time (in minutes)
 - A relevant image URL from Unsplash
 - A brief description
+- A list of ingredients
+- Step-by-step instructions
 
-Format your response as a JSON object with a 'suggestions' array containing these recipes. Each recipe should have the following structure:
+First, respond to the user's query in your charming Chef Pierre persona. Then include the recipe in valid JSON format as follows:
+
 {
-  "suggestions": [
-    {
-      "title": "Recipe Title",
-      "cooking_time": "15 minutes",
-      "image_url": "https://unsplash.com/image-link",
-      "description": "Brief description of the dish"
-    }
-  ]
+  "recipe": {
+    "title": "Recipe Title",
+    "cooking_time": "30 minutes",
+    "image_url": "https://unsplash.com/photos/relevant-image",
+    "description": "Brief description of the dish",
+    "ingredients": ["Ingredient 1", "Ingredient 2", "Ingredient 3"],
+    "instructions": ["Step 1", "Step 2", "Step 3"],
+    "servings": "4 servings"
+  }
 }
 
-Return only valid JSON without any explanations or additional text.`}] }],
+Make sure your response includes both the conversational text AND the JSON recipe data.`}] }],
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1500,
@@ -111,57 +115,61 @@ Return only valid JSON without any explanations or additional text.`}] }],
     
     const responseText = result.response.text();
     
-    // Extract suggestions from the response
-    const suggestionsMatch = responseText.match(/\{[\s\S]*"suggestions":\s*\[[\s\S]*\][\s\S]*\}/);
-    let suggestions = [];
+    // Extract recipe JSON from the response
+    const recipeJsonMatch = responseText.match(/\{[\s\S]*"recipe":\s*\{[\s\S]*\}[\s\S]*\}/);
+    let recipeData = null;
     
-    if (suggestionsMatch) {
+    if (recipeJsonMatch) {
       try {
-        const parsedResponse = JSON.parse(suggestionsMatch[0]);
-        suggestions = parsedResponse.suggestions;
+        // Parse the JSON from the response
+        const parsedResponse = JSON.parse(recipeJsonMatch[0]);
+        if (parsedResponse.recipe) {
+          recipeData = parsedResponse.recipe;
+        }
       } catch (e) {
-        console.error("Failed to parse suggestions:", e);
+        console.error("Failed to parse recipe JSON:", e);
       }
     }
     
-    // Check if the response contains a recipe (basic detection)
-    const hasRecipe = 
-      responseText.toLowerCase().includes("ingredients:") || 
-      responseText.toLowerCase().includes("instructions:") ||
-      (responseText.toLowerCase().includes("minutes") && responseText.toLowerCase().includes("servings"));
+    // Get the conversation text without the JSON
+    let conversationText = responseText;
+    if (recipeJsonMatch) {
+      // Remove the JSON part from the conversation text
+      conversationText = responseText.replace(recipeJsonMatch[0], '').trim();
+    }
     
-    // Create response object with suggestions
+    // Create response object
     const response: ChatResponse = {
       message: {
         role: "assistant",
-        content: responseText
+        content: conversationText
       }
     };
     
-    // Add the suggestions to the response if available
-    if (suggestions && suggestions.length > 0) {
-      response.suggestions = suggestions;
-    }
-    
-    // If it seems like a recipe, add a simplified recipe object
-    if (hasRecipe) {
-      // Extract a title - look for capitalized words at the beginning of the response
-      const titleMatch = responseText.match(/^(?:Here's|Here is|Try this|How about)(.*?)[.!?]/i);
-      const recipeTitle = titleMatch ? titleMatch[1].trim() : "Delicious Recipe";
-      
-      // Try to extract cooking time
-      const timeMatch = responseText.match(/(\d+)(?:\s+to\s+\d+)?\s+minutes/i);
-      const cookingTime = timeMatch ? timeMatch[0] : "30 minutes";
-      
-      // Try to extract servings
-      const servingsMatch = responseText.match(/(\d+)(?:\s+to\s+\d+)?\s+servings/i);
-      const servings = servingsMatch ? servingsMatch[0] : "4 servings";
-      
+    // If we have recipe data, add it to the response
+    if (recipeData) {
       response.recipe = {
-        title: recipeTitle,
-        time: cookingTime,
-        servings: servings
+        title: recipeData.title || "Delicious Recipe",
+        time: recipeData.cooking_time || "30 minutes",
+        servings: recipeData.servings || "4 servings",
+        recipeData: {
+          title: recipeData.title || "Delicious Recipe",
+          description: recipeData.description || "A tasty dish",
+          ingredients: recipeData.ingredients ? recipeData.ingredients.join("\n") : "No ingredients specified",
+          instructions: recipeData.instructions ? recipeData.instructions.join("\n") : "No instructions provided",
+          mealType: recipeData.mealType || "Main Dish",
+          prepTime: parseInt(recipeData.cooking_time) || 30,
+          servings: parseInt(recipeData.servings) || 4
+        }
       };
+      
+      // Create a single suggestion from the recipe data
+      response.suggestions = [{
+        title: recipeData.title || "Delicious Recipe",
+        cooking_time: recipeData.cooking_time || "30 minutes",
+        image_url: recipeData.image_url || "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+        description: recipeData.description || "A tasty dish"
+      }];
     }
     
     return response;

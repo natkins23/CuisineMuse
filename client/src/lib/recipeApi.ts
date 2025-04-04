@@ -53,6 +53,7 @@ export interface ChatMessage {
     title: string;
     time: string; // Formatted time (e.g., "25 minutes")
     servings: string; // Formatted servings (e.g., "4 servings")
+    recipeData?: Partial<GeneratedRecipe>; // Full recipe data if available
   };
 }
 
@@ -76,6 +77,7 @@ export interface ChatResponse {
     title: string;
     time: string;
     servings: string;
+    recipeData?: Partial<GeneratedRecipe>; // Full recipe data if available
   };
   suggestions?: RecipeSuggestion[];
 }

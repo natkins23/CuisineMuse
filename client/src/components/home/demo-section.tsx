@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatMessage, RecipeSuggestion, sendChatMessage } from "@/lib/recipeApi";
 import { useToast } from "@/hooks/use-toast";
 import RecipeGrid from "@/components/recipe/RecipeGrid";
+import DetailedRecipeCard from "@/components/recipe/DetailedRecipeCard";
 
 // Demo suggestion categories
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
@@ -454,7 +455,7 @@ export default function DemoSection() {
             </div>
           </div>
 
-          {/* Recipe Grid for displaying recipe suggestions */}
+          {/* Recipe Card for displaying structured recipe data */}
           {recipeSuggestions.length > 0 && (
             <motion.div 
               className="mt-10 bg-white rounded-xl shadow-lg overflow-hidden"
@@ -463,9 +464,31 @@ export default function DemoSection() {
               transition={{ duration: 0.4, delay: 0.2 }}
             >
               <div className="bg-orange-500 text-white px-6 py-3">
-                <h3 className="font-medium">Suggested Recipes</h3>
+                <h3 className="font-medium">Generated Recipe</h3>
               </div>
-              <RecipeGrid recipes={recipeSuggestions} />
+              <div className="p-4">
+                {/* Get the last message with a recipe */}
+                {(() => {
+                  // Find the last message that has recipe data
+                  const recipeMessage = [...messages].reverse().find(m => m.recipe?.recipeData);
+                  
+                  if (recipeMessage?.recipe?.recipeData && recipeSuggestions[0]) {
+                    return (
+                      <DetailedRecipeCard
+                        title={recipeSuggestions[0].title}
+                        image={recipeSuggestions[0].image_url}
+                        time={recipeSuggestions[0].cooking_time}
+                        servings={recipeMessage.recipe.servings || "4 servings"}
+                        description={recipeSuggestions[0].description}
+                        recipeData={recipeMessage.recipe.recipeData}
+                      />
+                    );
+                  } else {
+                    // Fallback to simple recipe grid if no detailed data is available
+                    return <RecipeGrid recipes={recipeSuggestions} />;
+                  }
+                })()}
+              </div>
               <div className="p-4 text-center">
                 <Button 
                   onClick={() => { setRecipeSuggestions([]); setShowSuggestions(true); }}
