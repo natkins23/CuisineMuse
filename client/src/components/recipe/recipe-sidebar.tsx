@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, User, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from 'react'; // Added import for useState
 
 interface RecipeSidebarProps {
   recipes: Recipe[];
@@ -12,12 +13,37 @@ interface RecipeSidebarProps {
   onDelete?: (recipeId: string) => void;
 }
 
+// RecipeModal component
+const RecipeModal = ({ recipe, isOpen, onClose }: { recipe: Recipe; isOpen: boolean; onClose: () => void }) => {
+  if (!isOpen || !recipe) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
+        <h2 className="text-xl font-bold mb-4">{recipe.title}</h2>
+        <p>{recipe.description}</p>
+        {/* Add other recipe details here */}
+        <button onClick={onClose} className="mt-4 px-4 py-2 bg-gray-800 text-white rounded">Close</button>
+      </div>
+    </div>
+  );
+};
+
+
 export default function RecipeSidebar({
   recipes,
   isLoading,
   onRecipeSelect,
   onDelete,
 }: RecipeSidebarProps) {
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleRecipeClick = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setIsModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="p-4">
@@ -86,7 +112,7 @@ export default function RecipeSidebar({
               <Card key={recipe.id} className="hover:shadow-md transition-all">
                 <div
                   className="cursor-pointer"
-                  onClick={() => onRecipeSelect && onRecipeSelect(recipe)}
+                  onClick={() => handleRecipeClick(recipe)}
                 >
                   <CardHeader className="p-4 pb-2">
                     <div className=" flex justify-between">
@@ -128,6 +154,11 @@ export default function RecipeSidebar({
           </div>
         )}
       </div>
+      <RecipeModal 
+        recipe={selectedRecipe}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </ScrollArea>
   );
 }
