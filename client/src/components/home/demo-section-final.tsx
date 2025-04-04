@@ -15,14 +15,16 @@ const dietarySuggestions = ["Vegetarian", "Vegan", "Gluten-free", "Dairy-free", 
 const timeSuggestions = ["Under 30 minutes", "Quick & Easy", "One-pot meal"];
 
 // Proteins that are not vegan
+// Proteins that are not vegan or vegetarian
 const nonVeganProteins = ["Chicken", "Beef", "Fish", "Pork", "Eggs"];
+const nonVegetarianProteins = ["Chicken", "Beef", "Fish", "Pork"];
 
 export default function DemoSection() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your CulinaryMuse assistant. What kind of recipe would you like to create today?"
+      content: "Bonjour! I am Chef Pierre, your personal CulinaryMuse assistant. What delightful recipe would you like me to 'elp you create today? Magnifique!"
     }
   ]);
   
@@ -44,8 +46,17 @@ export default function DemoSection() {
   
   // Check if a protein is compatible with the selected dietary options
   const isProteinDisabled = (protein: string) => {
+    // Check for vegan restrictions
+    const isVeganSelected = selectedDietaryOptions.includes("Vegan");
+    const isNonVegan = nonVeganProteins.includes(protein);
+    
+    // Check for vegetarian restrictions
+    const isVegetarianSelected = selectedDietaryOptions.includes("Vegetarian");
+    const isNonVegetarian = nonVegetarianProteins.includes(protein);
+    
     return (
-      selectedDietaryOptions.includes("Vegan") && nonVeganProteins.includes(protein)
+      (isVeganSelected && isNonVegan) || // Disable non-vegan options when vegan is selected
+      (isVegetarianSelected && isNonVegetarian) // Disable non-vegetarian options when vegetarian is selected
     );
   };
   
@@ -153,6 +164,7 @@ export default function DemoSection() {
         break;
       case 'dietary': {
         const isVeganSelected = chipText === "Vegan" && !selectedDietaryOptions.includes("Vegan");
+        const isVegetarianSelected = chipText === "Vegetarian" && !selectedDietaryOptions.includes("Vegetarian");
         
         setSelectedDietaryOptions(prev => {
           if (prev.includes(chipText)) {
@@ -165,6 +177,11 @@ export default function DemoSection() {
         // If vegan is selected, clear incompatible proteins
         if (isVeganSelected) {
           setSelectedProteins(prev => prev.filter(protein => !nonVeganProteins.includes(protein)));
+        }
+        
+        // If vegetarian is selected, clear incompatible proteins
+        if (isVegetarianSelected) {
+          setSelectedProteins(prev => prev.filter(protein => !nonVegetarianProteins.includes(protein)));
         }
         break;
       }
@@ -220,7 +237,7 @@ export default function DemoSection() {
             <div className="bg-green-600 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center">
                 <MessageSquareIcon className="h-6 w-6 mr-2" />
-                <h3 className="font-medium text-lg">Recipe Assistant</h3>
+                <h3 className="font-medium text-lg">Chef Pierre</h3>
               </div>
               <button className="p-2 rounded-full hover:bg-green-700 transition-all">
                 <DotsIcon className="h-5 w-5" />
@@ -417,7 +434,7 @@ export default function DemoSection() {
               </div>
               {isLoading && (
                 <div className="flex items-center justify-center mt-3">
-                  <p className="text-sm text-neutral-500">Cooking up a response...</p>
+                  <p className="text-sm text-neutral-500">Chef Pierre is preparing something special...</p>
                 </div>
               )}
             </div>

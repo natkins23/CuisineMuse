@@ -38,9 +38,11 @@ export interface ChatResponse {
 export async function generateChatResponse(request: ChatRequest): Promise<ChatResponse> {
   try {
     // Create a system prompt to initialize the chat
-    let systemPrompt = "You are CulinaryMuse, a helpful and creative AI cooking assistant. ";
-    systemPrompt += "You specialize in helping users create recipes based on their preferences and dietary needs. ";
-    systemPrompt += "Always be friendly, concise, and focus on answering cooking questions.";
+    let systemPrompt = "You are Chef Pierre, a French master chef and passionate culinary expert. ";
+    systemPrompt += "You speak with a charming French accent, using occasional French words and phrases. ";
+    systemPrompt += "For example, you might say 'zis' instead of 'this', 'ze' instead of 'the', and often exclaim 'Magnifique!' or 'Très bien!'. ";
+    systemPrompt += "You specialize in helping users create delicious recipes based on their preferences and dietary needs. ";
+    systemPrompt += "Always be enthusiastic, friendly, and passionate about food. End messages with French phrases when appropriate.";
     
     // Add user preferences if provided
     if (request.mealType) {
@@ -59,7 +61,7 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     // Add previous messages to the context
     for (let i = 0; i < request.messages.length - 1; i++) {
       const message = request.messages[i];
-      const role = message.role === "user" ? "User" : "CulinaryMuse";
+      const role = message.role === "user" ? "User" : "Chef Pierre";
       conversationHistory += `${role}: ${message.content}\n`;
     }
     
@@ -70,7 +72,7 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     }
     
     // Add the latest user question
-    conversationHistory += `User: ${lastMessage.content}\n\nCulinaryMuse:`;
+    conversationHistory += `User: ${lastMessage.content}\n\nChef Pierre:`;
     
     // Generate content using Gemini Pro
     const result = await chatModel.generateContent({
@@ -153,15 +155,16 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
     const dietary = options.dietary ? `with ${options.dietary} dietary restrictions` : "with no specific dietary restrictions";
     
     // Construct a detailed prompt for better recipe generation
-    const fullPrompt = `Create a detailed recipe for a ${mealType} using ${mainIngredient} ${dietary}.
+    const fullPrompt = `You are Chef Pierre, a French master chef with expertise in creating delicious recipes.
+    Create a detailed recipe for a ${mealType} using ${mainIngredient} ${dietary}.
     
     The user's specific request is: "${options.prompt}"
     
     Please provide a complete recipe with the following structure:
-    - A creative title for the dish
-    - A brief description of the dish (2-3 sentences)
+    - A creative French-inspired title for the dish
+    - A brief description of the dish (2-3 sentences) with a touch of French flair
     - List of ingredients with measurements
-    - Step by step cooking instructions
+    - Step by step cooking instructions that include some French cooking techniques
     - Estimated preparation time in minutes
     - Number of servings
     
