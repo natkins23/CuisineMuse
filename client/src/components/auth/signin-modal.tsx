@@ -148,10 +148,11 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
               {error === "Firebase: Error (auth/invalid-credential)." 
                 ? (
                   <>
-                    Your credentials didn't match.
+                    Your credentials didn't match. Try again.
+                    <br />
                     <Button 
                       variant="link" 
-                      className="px-0 w-fit h-auto text-sm text-destructive hover:text-destructive/90"
+                      className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
                       onClick={() => alert("Password reset functionality coming soon!")}
                     >
                       Reset your password
