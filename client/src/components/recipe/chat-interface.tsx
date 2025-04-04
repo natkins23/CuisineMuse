@@ -325,14 +325,21 @@ export default function ChatInterface() {
           <MessageSquareIcon className="h-6 w-6 mr-2" />
           <h3 className="font-medium text-lg">Chef Pierre</h3>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-white hover:bg-green-700"
-          onClick={handleResetChat}
-        >
-          New Conversation
-        </Button>
+        <div className="flex items-center gap-4">
+          {currentUser && (
+            <div className="text-sm bg-green-700 px-2 py-1 rounded">
+              {messages.filter(m => m.recipe).length}/10 generations
+            </div>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-white hover:bg-green-700"
+            onClick={handleResetChat}
+          >
+            New Conversation
+          </Button>
+        </div>
       </div>
 
       {/* Chat Messages */}
