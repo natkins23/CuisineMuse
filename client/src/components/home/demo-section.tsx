@@ -36,27 +36,26 @@ export default function DemoSection() {
     if (!inputValue.trim()) return;
     
     // Add user message
-    const newMessages = [
-      ...messages,
-      { role: "user", content: inputValue }
-    ];
+    const userMessage: ChatMessage = { 
+      role: "user", 
+      content: inputValue 
+    };
+    const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInputValue("");
     
     // Simulate AI response after a small delay
     setTimeout(() => {
-      setMessages([
-        ...newMessages,
-        { 
-          role: "assistant", 
-          content: "Here's a quick chicken and vegetable stir-fry:",
-          recipe: {
-            title: "Quick Chicken & Vegetable Stir-Fry",
-            time: "25 minutes",
-            servings: "4 servings"
-          }
+      const assistantMessage: ChatMessage = { 
+        role: "assistant", 
+        content: "Here's a quick chicken and vegetable stir-fry:",
+        recipe: {
+          title: "Quick Chicken & Vegetable Stir-Fry",
+          time: "25 minutes",
+          servings: "4 servings"
         }
-      ]);
+      };
+      setMessages([...newMessages, assistantMessage]);
     }, 1500);
   };
   

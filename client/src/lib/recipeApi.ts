@@ -24,7 +24,10 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
   try {
     const response = await apiRequest<GeneratedRecipe>("/api/generate-recipe", {
       method: "POST",
-      body: options,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(options),
     });
     
     return response;
