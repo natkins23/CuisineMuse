@@ -118,7 +118,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Authentication Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
