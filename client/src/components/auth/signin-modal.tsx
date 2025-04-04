@@ -28,7 +28,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       setIsSigningIn(true);
       const userCredential = await signInWithGoogle();
       
-      if (userCredential?.user?.email) {
+      if (userCredential?.user?.email && userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime) {
         try {
           const displayName = userCredential.user.displayName || 'there';
           await fetch('/api/email/test', {

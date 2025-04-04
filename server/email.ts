@@ -33,8 +33,8 @@ export async function sendTestEmail(email: string, name?: string): Promise<boole
       subject: 'Welcome to CuisineMuse – Let\'s get cooking 🍳',
       html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto;">
-          <h1 style="color: #ff6f61;">Welcome to CuisineMuse!</h1>
-          <p>Thanks for signing up.</p>
+          <h1 style="color: #ff6f61;">Welcome to CuisineMuse${name ? ', ' + name : ''}!</h1>
+          <p>Thanks for joining our community.</p>
 
           <p>Your account is ready — you can now start creating recipes powered by AI, personalized to your taste, schedule, and what's already in your kitchen.</p>
 
