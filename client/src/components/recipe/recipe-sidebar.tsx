@@ -203,7 +203,7 @@ export default function RecipeSidebar({
           </div>
         ) : (
           <div className="space-y-4">
-            {recipes.map((recipe) => (
+            {mockRecipes.map((recipe) => ( // Changed to use mockRecipes
               <Card key={recipe.id} className="hover:shadow-md transition-all">
                 <div
                   className="cursor-pointer"
