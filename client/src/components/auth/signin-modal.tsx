@@ -16,23 +16,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect } from "react";
 
 function CheckEmailExists({ email, onGoogleSignIn }: { email: string; onGoogleSignIn?: () => void }) {
-  const [exists, setExists] = useState<boolean | null>(null);
+  const [authMethods, setAuthMethods] = useState<string[]>([]);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     const checkEmail = async () => {
       try {
         const methods = await fetchSignInMethodsForEmail(auth, email);
-        setExists(methods.length > 0);
+        setAuthMethods(methods);
+        setError(false);
       } catch (e) {
-        setExists(null);
+        setError(true);
       }
     };
     checkEmail();
   }, [email]);
 
-  if (exists === null) return <>Authentication error. Please try again.</>;
+  if (error) return <>Authentication error. Please try again.</>;
 
-  return exists ? (
+  if (authMethods.includes('google.com')) {
+    return (
+      <>
+        This email is associated with a Google account.
+        <br />
+        <Button 
+          variant="link" 
+          className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
+          onClick={onGoogleSignIn}
+        >
+          Sign in with Google instead
+        </Button>
+      </>
+    );
+  }
+
+  return authMethods.length > 0 ? (
     <>
       Your password is incorrect. Try again.
       <br />
