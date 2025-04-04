@@ -16,9 +16,9 @@ const db = storage; // Using in-memory storage for simplicity
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply default rate limiting to all API routes
   app.use("/api", defaultLimiter);
-  
+
   // prefix all routes with /api
-  
+
   // Get all recipes
   app.get("/api/recipes", async (req: Request, res: Response) => {
     try {
@@ -30,33 +30,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch recipes" });
     }
   });
-  
+
   // Get single recipe
   app.get("/api/recipes/:id", async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
       const recipe = await db.getRecipeById(id);
-      
+
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
       }
-      
+
       res.json(recipe);
     } catch (error) {
       console.error("Error fetching recipe:", error);
       res.status(500).json({ message: "Failed to fetch recipe" });
     }
   });
-  
+
   // Create new recipe - Protected route requiring Firebase auth
   app.post("/api/recipes", async (req: Request, res: Response) => {
     try {
       const validatedData = insertRecipeSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ message: "Invalid recipe data", errors: validatedData.error.format() });
       }
-      
+
       const recipe = await db.createRecipe(validatedData.data);
       res.status(201).json(recipe);
     } catch (error) {
@@ -64,17 +64,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create recipe" });
     }
   });
-  
+
   // Update recipe
   app.patch("/api/recipes/:id", async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
       const existingRecipe = await db.getRecipeById(id);
-      
+
       if (!existingRecipe) {
         return res.status(404).json({ message: "Recipe not found" });
       }
-      
+
       const recipe = await db.updateRecipe(id, req.body);
       res.json(recipe);
     } catch (error) {
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update recipe" });
     }
   });
-  
+
   // Save recipe for user
   app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
@@ -117,18 +117,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = Number(req.params.id);
       const success = await db.deleteRecipe(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Recipe not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting recipe:", error);
       res.status(500).json({ message: "Failed to delete recipe" });
     }
   });
-  
+
   // Generate recipe using Google Gemini - with stricter rate limiting
   // Get successful generations count
   app.get("/api/generations", (req: Request, res: Response) => {
@@ -139,11 +139,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate-recipe", aiLimiter, async (req: Request, res: Response) => {
     try {
       const { prompt, mealType, mainIngredient, dietary } = req.body;
-      
+
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
-      
+
       // Use our server-side generateRecipe function
       const recipeData = await generateRecipe({
         prompt,
@@ -151,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mainIngredient,
         dietary
       });
-      
+
       res.json(recipeData);
     } catch (error: any) {
       console.error("Gemini API error:", error);
@@ -161,21 +161,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Chat conversation with recipe assistant - with stricter rate limiting
   app.post("/api/chat", aiLimiter, async (req: Request, res: Response) => {
     try {
       const { messages, mealType, mainIngredient, dietary } = req.body;
-      
+
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ message: "Messages array is required" });
       }
-      
+
       const lastMessage = messages[messages.length - 1];
       if (!lastMessage || lastMessage.role !== "user" || !lastMessage.content) {
         return res.status(400).json({ message: "Last message must be from user with content" });
       }
-      
+
       const chatResponse = await generateChatResponse({
         messages,
         mealType,
@@ -193,10 +193,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Fetch user by email using Admin SDK
       const userRecord = await admin.auth().getUserByEmail(email);
-      
+
       // Get sign-in methods
       const providerData = userRecord.providerData.map(provider => provider.providerId);
-      
+
       res.json({
         email,
         uid: userRecord.uid,
@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         disabled: userRecord.disabled,
         metadata: userRecord.metadata
       });
-      
+
     } catch (error: any) {
       console.error("Error fetching auth methods:", error);
       res.status(500).json({ 
@@ -215,10 +215,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-      
+
       // Log the complete response for debugging
       console.log("Chat API Response:", JSON.stringify(chatResponse, null, 2));
-      
+
       res.json(chatResponse);
     } catch (error: any) {
       console.error("Gemini Chat API error:", error);
@@ -228,19 +228,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Subscribe to newsletter
   app.post("/api/newsletter", async (req: Request, res: Response) => {
     try {
       const validatedData = insertNewsletterSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         console.error("Newsletter validation error:", validatedData.error.format());
         return res.status(400).json({ message: "Invalid email" });
       }
 
       console.log("Attempting to subscribe email:", validatedData.data.email);
-      
+
       const newsletter = await db.subscribeToNewsletter(validatedData.data.email);
       console.log("Subscription successful, created newsletter entry:", newsletter);
 
@@ -255,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Original email:', emailToUse);
         console.log('NODE_ENV:', process.env.NODE_ENV);
         console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
-        
+
         if (emailToUse.endsWith('@example.com') || !emailToUse.includes('@') || process.env.NODE_ENV === 'development') {
           console.log('Using test email for Resend in development environment');
           emailToUse = 'delivered@resend.dev';
@@ -277,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return;
       }
-      
+
       res.status(201).json(newsletter);
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
@@ -302,32 +302,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/email/recipe", async (req: Request, res: Response) => {
     try {
       const validatedData = emailRecipeSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ 
           message: "Invalid email data", 
           errors: validatedData.error.format() 
         });
       }
-      
+
       let email = validatedData.data.recipientEmail;
-      
+
       // For test environments, ensure we use a valid test email for Resend
       // In production this check would be removed
       if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
         console.log('Using test email for Resend in development environment');
         email = 'delivered@resend.dev';
       }
-      
+
       const success = await sendRecipeEmail({
         ...validatedData.data,
         recipientEmail: email
       });
-      
+
       if (!success) {
         return res.status(500).json({ message: "Failed to send email" });
       }
-      
+
       res.json({ message: "Email sent successfully" });
     } catch (error) {
       console.error("Error sending recipe email:", error);
@@ -343,29 +343,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/email/test", async (req: Request, res: Response) => {
     try {
       const validatedData = testEmailSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ 
           message: "Invalid email", 
           errors: validatedData.error.format() 
         });
       }
-      
+
       let email = validatedData.data.email;
-      
+
       // For test environments, ensure we use a valid test email for Resend
       // In production this check would be removed
       if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
         console.log('Using test email for Resend in development environment');
         email = 'delivered@resend.dev';
       }
-      
+
       const success = await sendTestEmail(email);
-      
+
       if (!success) {
         return res.status(500).json({ message: "Failed to send test email" });
       }
-      
+
       res.json({ message: "Test email sent successfully" });
     } catch (error) {
       console.error("Error sending test email:", error);

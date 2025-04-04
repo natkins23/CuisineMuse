@@ -339,7 +339,7 @@ export default function ChatInterface() {
         <div className="flex items-center gap-4">
           {currentUser && (
             <div className="text-sm bg-green-700 px-2 py-1 rounded">
-              {generationCount}/10 generations
+              {isLoading ? "..." : `${generationCount}`}/10 generations
             </div>
           )}
           <Button 
