@@ -131,7 +131,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       } else {
         // Map Firebase error codes to user-friendly messages
         let errorMessage = 'An error occurred. Please try again.';
-        
+
         // Use explicit conditional checks instead of object lookup to avoid TypeScript issues
         if (error.code === 'auth/invalid-credential') {
           errorMessage = 'These credentials do not exist. Please try again or sign up.';
@@ -148,7 +148,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         } else if (error.code === 'auth/unauthorized-domain') {
           errorMessage = 'This domain is not authorized for sign in.';
         }
-        
+
         setError(errorMessage);
       }
     } finally {
@@ -165,27 +165,9 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       const { email: rawEmail, password } = form.getValues();
       const email = rawEmail.trim().toLowerCase();
 
-      const methods = await fetchSignInMethodsForEmail(auth, email);
+      if (isSignUp) {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
 
-      if (!isSignUp) {
-        // Sign In flow
-        if (methods.includes("google.com")) {
-          setError("This account uses Google Sign-In. Please use that option.");
-          return;
-        }
-
-        if (methods.length === 0) {
-          setError("No account found with this email. Please sign up or try Google Sign-In.");
-          return;
-        }
-
-        // Check specifically for password authentication method
-        if (!methods.includes("password")) {
-          setError("No email/password account found. Please sign up or use Google.");
-          return;
-        }
-      } else {
-        // Sign Up flow
         if (methods.length > 0) {
           if (methods.includes("google.com")) {
             setError("This email is already used with Google Sign-In. Please use that option.");
