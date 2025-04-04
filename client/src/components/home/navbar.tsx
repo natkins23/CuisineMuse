@@ -30,9 +30,9 @@ export default function Navbar() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
-            <a href="#features" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">Features</a>
-            <a href="#how-it-works" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">How It Works</a>
-            <a href="#recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">Recipes</a>
+            <a onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} href="#features" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">Features</a>
+            <a onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} href="#how-it-works" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">How It Works</a>
+            <a onClick={(e) => { e.preventDefault(); document.getElementById('recipes')?.scrollIntoView({ behavior: 'smooth' }); }} href="#recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">Recipes</a>
             {!currentUser && (
               <Button className="bg-orange-500 hover:bg-orange-600 transition-colors">
                 Get Started
