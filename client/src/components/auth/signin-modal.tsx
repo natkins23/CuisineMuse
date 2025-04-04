@@ -118,7 +118,21 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertTitle>Authentication Error</AlertTitle>
+            <AlertDescription>
+              {error === "Firebase: Error (auth/invalid-credential)." 
+                ? "Your credentials didn't match. Please try again or reset your password."
+                : error}
+            </AlertDescription>
+            {error === "Firebase: Error (auth/invalid-credential)." && (
+              <Button 
+                variant="link" 
+                className="px-0 text-sm text-destructive-foreground/90 hover:text-destructive-foreground"
+                onClick={() => alert("Password reset functionality coming soon!")}
+              >
+                Reset password
+              </Button>
+            )}
           </Alert>
         )}
 
