@@ -6,6 +6,7 @@ import RecipeShowcase from "@/components/home/recipe-showcase";
 import CTASection from "@/components/home/cta-section";
 import AIIntegration from "@/components/home/ai-integration";
 import Footer from "@/components/home/footer";
+import ScrollToTop from "@/components/ui/scroll-to-top";
 import { useQuery } from "@tanstack/react-query";
 import { Recipe } from "@shared/schema";
 
@@ -29,6 +30,7 @@ export default function Home() {
       <RecipeShowcase recipes={recipeData} />
       <AIIntegration />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

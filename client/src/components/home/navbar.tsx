@@ -25,14 +25,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
+            <a 
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex-shrink-0 flex items-center cursor-pointer"
+            >
               <span className="text-green-600 mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </span>
               <span className="font-serif font-bold text-xl text-green-800">CulinaryMuse</span>
-            </Link>
+            </a>
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
