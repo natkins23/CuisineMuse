@@ -2,9 +2,11 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 // Firebase configuration for server-side
+const projectId = process.env.VITE_FIREBASE_PROJECT_ID?.trim();
+
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  projectId: projectId,
   appId: process.env.VITE_FIREBASE_APP_ID,
 };
 

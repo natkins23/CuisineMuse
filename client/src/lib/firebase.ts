@@ -6,12 +6,14 @@ const appHost = window.location.hostname;
 const isLocalhost = appHost === 'localhost' || appHost === '127.0.0.1' || appHost.includes('replit.dev') || appHost.includes('.repl.co');
 
 // Firebase configuration
+const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID?.trim();
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   // Dynamically set the authDomain based on environment
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
+  authDomain: `${projectId}.firebaseapp.com`,
+  projectId: projectId,
+  storageBucket: `${projectId}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 

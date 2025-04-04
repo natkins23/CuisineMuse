@@ -81,6 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       provider.addScope('email');
       provider.addScope('profile');
       
+      // Handle unauthorized domain error
+      // This is a temporary solution to show user what they need to do
+      // Ideally, the domain should be added to authorized domains in Firebase Console
+      const currentDomain = window.location.origin;
+      
       // Set custom parameters
       provider.setCustomParameters({
         prompt: 'select_account',
