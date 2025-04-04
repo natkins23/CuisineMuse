@@ -53,16 +53,26 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           </button>
         </div>
         <p className="mt-1 text-neutral-600 text-sm">{recipe.description}</p>
-        <div className="flex items-center mt-3 text-sm">
-          <span className="flex items-center text-neutral-500">
-            <Clock className="h-4 w-4 mr-1" />
-            {recipe.prepTime} mins
-          </span>
-          <span className="mx-2 text-neutral-300">|</span>
-          <span className="flex items-center text-neutral-500">
-            <Users className="h-4 w-4 mr-1" />
-            {recipe.servings} servings
-          </span>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center text-sm">
+            <span className="flex items-center text-neutral-500">
+              <Clock className="h-4 w-4 mr-1" />
+              {recipe.prepTime} mins
+            </span>
+            <span className="mx-2 text-neutral-300">|</span>
+            <span className="flex items-center text-neutral-500">
+              <Users className="h-4 w-4 mr-1" />
+              {recipe.servings} servings
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={currentUser ? handleSave : () => setIsModalOpen(true)}
+            className="hover:text-orange-500"
+          >
+            <BookmarkPlus className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>
