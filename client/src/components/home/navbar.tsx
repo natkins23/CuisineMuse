@@ -84,11 +84,6 @@ export default function Navbar() {
               </Link>
             )}
             
-            {!currentUser && (
-              <Button className="bg-orange-500 hover:bg-orange-600 transition-colors">
-                Get Started
-              </Button>
-            )}
             <AuthStatus />
           </div>
           
