@@ -178,7 +178,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try to send a welcome email to the subscriber
       try {
-        // For test environments, use a valid test email for Resend
+        if (!process.env.RESEND_API_KEY) {
+          console.error('RESEND_API_KEY is not set');
+          throw new Error('RESEND_API_KEY is not configured');
+        }
+
         let emailToUse = validatedData.data.email;
         if (emailToUse.endsWith('@example.com') || !emailToUse.includes('@') || process.env.NODE_ENV === 'development') {
           console.log('Using test email for Resend in development environment');
@@ -186,11 +190,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const emailSent = await sendTestEmail(emailToUse);
-        console.log('Welcome email result:', emailSent ? 'Success' : 'Failed');
-        console.log('Welcome email sent to new subscriber:', emailToUse);
+        if (!emailSent) {
+          throw new Error('Email sending failed');
+        }
+        console.log('Welcome email successfully sent to:', emailToUse);
       } catch (emailError) {
-        // Just log the error but don't fail the subscription
         console.error('Failed to send welcome email:', emailError);
+        // Still store the subscription but notify about email failure
+        res.status(201).json({ 
+          ...newsletter, 
+          warning: "Subscription saved but welcome email could not be sent" 
+        });
+        return;
       }
       
       res.status(201).json(newsletter);
