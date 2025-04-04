@@ -134,58 +134,58 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             </Button>
           </div>
         ) : (
-          <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="email">Email</TabsTrigger>
-              <TabsTrigger value="google">Google</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="email" className="space-y-4">
-              <div className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    className="flex-1"
-                    onClick={() => handleEmailSignIn(false)}
-                    disabled={isSigningIn}
-                  >
-                    Sign In
-                  </Button>
-                  <Button 
-                    className="flex-1"
-                    variant="outline"
-                    onClick={() => handleEmailSignIn(true)}
-                    disabled={isSigningIn}
-                  >
-                    Sign Up
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="google">
+          <div className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div className="flex gap-2">
               <Button 
-                variant="outline" 
-                className="flex items-center justify-center w-full p-6"
-                onClick={handleGoogleSignIn}
+                className="flex-1"
+                onClick={() => handleEmailSignIn(false)}
                 disabled={isSigningIn}
               >
-                <SiGoogle className="h-5 w-5 mr-2 text-red-500" />
-                <span>{isSigningIn ? "Signing in..." : "Continue with Google"}</span>
+                Sign In
               </Button>
-            </TabsContent>
-          </Tabs>
+              <Button 
+                className="flex-1"
+                variant="outline"
+                onClick={() => handleEmailSignIn(true)}
+                disabled={isSigningIn}
+              >
+                Sign Up
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={handleGoogleSignIn}
+              disabled={isSigningIn}
+            >
+              <SiGoogle className="h-5 w-5 mr-2 text-red-500" />
+              <span>{isSigningIn ? "Signing in..." : "Google"}</span>
+            </Button>
+          </div>
         )}
 
         <DialogFooter className="sm:justify-start">
