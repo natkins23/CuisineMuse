@@ -48,15 +48,16 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   };
 
   return (
-    <Card className="recipe-card rounded-xl shadow-md overflow-hidden bg-white border border-neutral-100 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-      <div className="h-48 w-full overflow-hidden">
-        <img 
-          className="h-full w-full object-cover" 
-          src={getImageUrl(recipe.mealType)} 
-          alt={recipe.title} 
-        />
-      </div>
-      <CardContent className="p-5">
+    <>
+      <Card className="recipe-card rounded-xl shadow-md overflow-hidden bg-white border border-neutral-100 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+        <div className="h-48 w-full overflow-hidden">
+          <img 
+            className="h-full w-full object-cover" 
+            src={getImageUrl(recipe.mealType)} 
+            alt={recipe.title} 
+          />
+        </div>
+        <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
             <span className={`inline-block ${mealTypeColor} text-xs font-medium px-2.5 py-0.5 rounded-full`}>
@@ -91,7 +92,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           </Button>
         </div>
       </CardContent>
-    </Card>
-    <SignInModal open={showSignInModal} onOpenChange={setShowSignInModal} />
+      </Card>
+      <SignInModal open={showSignInModal} onOpenChange={setShowSignInModal} />
+    </>
   );
 }
