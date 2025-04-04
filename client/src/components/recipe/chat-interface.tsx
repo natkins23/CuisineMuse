@@ -130,6 +130,7 @@ export default function ChatInterface() {
       setShowSuggestions(false);
     } catch (error: any) {
       console.error("Chat error:", error);
+      console.error("Full error details:", JSON.stringify(error, null, 2));
 
       // Check if this is a rate limit error (status code 429)
       if (error.response?.status === 429 || 

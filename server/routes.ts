@@ -173,6 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat conversation with recipe assistant - with stricter rate limiting
   app.post("/api/chat", aiLimiter, async (req: Request, res: Response) => {
     try {
+      console.log("Current generations count:", successfulGenerations);
       const { messages, mealType, mainIngredient, dietary } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
