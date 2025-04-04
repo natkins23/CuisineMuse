@@ -5,12 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import { FrenchAccentProvider } from "@/context/FrenchAccentContext"; // Added import
+import MyRecipes from "@/pages/my-recipes";
+import { FrenchAccentProvider } from "@/context/FrenchAccentContext";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/my-recipes" component={MyRecipes} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -216,7 +216,7 @@ export default function DemoSection() {
       )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-base text-orange-600 font-semibold tracking-wide uppercase">How It Works</h2>
+          <h2 className="text-base text-orange-600 font-semibold tracking-wide uppercase">Try It Out</h2>
           <p className="mt-2 text-3xl leading-8 font-bold tracking-tight text-neutral-900 sm:text-4xl font-serif">
             Create Recipes in Seconds
           </p>
@@ -277,10 +277,21 @@ export default function DemoSection() {
                             <p className="font-medium text-neutral-800">{message.recipe.title}</p>
                             <p className="text-sm text-neutral-600 mt-1">Ready in {message.recipe.time} • {message.recipe.servings}</p>
                           </div>
-                          <button className="mt-3 flex items-center text-green-600 text-sm font-medium hover:text-green-800">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="mt-3 flex items-center text-green-600 border-green-200 hover:bg-green-50 text-sm font-medium"
+                            onClick={() => {
+                              if (message.recipe?.recipeData) {
+                                window.location.href = "/my-recipes";
+                              } else {
+                                alert("Please log in to save recipes");
+                              }
+                            }}
+                          >
                             <FileDown className="h-4 w-4 mr-1" />
                             Save this recipe
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>

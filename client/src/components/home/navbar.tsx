@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Book, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AuthStatus from "@/components/auth/auth-status";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,9 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { currentUser } = useAuth();
   const { frenchAccent, toggleFrenchAccent } = useFrenchAccent();
+  const [location] = useLocation();
+  
+  const isHomePage = location === "/";
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -33,9 +36,54 @@ export default function Navbar() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
-            <a onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} href="#features" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">Features</a>
-            <a onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} href="#how-it-works" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">How It Works</a>
-            <a onClick={(e) => { e.preventDefault(); document.getElementById('recipes')?.scrollIntoView({ behavior: 'smooth' }); }} href="#recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer">Recipes</a>
+            {isHomePage ? (
+              <>
+                <a 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); 
+                  }} 
+                  href="#features" 
+                  className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer"
+                >
+                  Features
+                </a>
+                <a 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); 
+                  }} 
+                  href="#how-it-works" 
+                  className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer"
+                >
+                  Try It Out
+                </a>
+                <a 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    document.getElementById('recipes')?.scrollIntoView({ behavior: 'smooth' }); 
+                  }} 
+                  href="#recipes" 
+                  className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out cursor-pointer"
+                >
+                  Save Recipes
+                </a>
+              </>
+            ) : (
+              <>
+                <Link href="/" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">
+                  Home
+                </Link>
+              </>
+            )}
+            
+            {currentUser && (
+              <Link href="/my-recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out flex items-center">
+                <Book className="h-4 w-4 mr-1" />
+                My Recipes
+              </Link>
+            )}
+            
             {!currentUser && (
               <Button className="bg-orange-500 hover:bg-orange-600 transition-colors">
                 Get Started
@@ -54,29 +102,52 @@ export default function Navbar() {
               <SheetContent side="right" className="w-[240px] sm:w-[380px]">
                 <div className="mt-6 flow-root">
                   <div className="flex flex-col space-y-4 -my-2">
-                    <a 
-                      href="#features" 
-                      className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Features
-                    </a>
-                    <a 
-                      href="#how-it-works" 
-                      className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      How It Works
-                    </a>
-                    <a 
-                      href="#recipes" 
-                      className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Recipes
-                    </a>
+                    {isHomePage ? (
+                      <>
+                        <a 
+                          href="#features" 
+                          className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Features
+                        </a>
+                        <a 
+                          href="#how-it-works" 
+                          className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Try It Out
+                        </a>
+                        <a 
+                          href="#recipes" 
+                          className="py-2 text-base font-medium text-neutral-600 hover:text-green-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Save Recipes
+                        </a>
+                      </>
+                    ) : (
+                      <Link href="/" className="py-2 text-base font-medium text-neutral-600 hover:text-green-600">
+                        Home
+                      </Link>
+                    )}
+                    
+                    {currentUser && (
+                      <Link 
+                        href="/my-recipes" 
+                        className="py-2 text-base font-medium text-neutral-600 hover:text-green-600 flex items-center"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Book className="h-4 w-4 mr-2" />
+                        My Recipes
+                      </Link>
+                    )}
+                    
                     {!currentUser && (
-                      <Button className="bg-orange-500 hover:bg-orange-600 transition-colors mt-4">
+                      <Button 
+                        className="bg-orange-500 hover:bg-orange-600 transition-colors mt-4"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         Get Started
                       </Button>
                     )}
