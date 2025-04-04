@@ -8,12 +8,21 @@ import {
 } from "@/components/ui/dialog";
 import { CheckCircle } from "lucide-react";
 
+import { useQuery } from "@tanstack/react-query";
+import { Recipe } from "@shared/schema";
+import { useAuth } from "@/context/AuthContext";
+
 export function TierModal() {
+  const { currentUser } = useAuth();
+  const { data: recipes } = useQuery<Recipe[]>({
+    queryKey: ['/api/recipes', currentUser?.uid],
+    enabled: !!currentUser,
+  });
   return (
     <Dialog>
       <DialogTrigger className="text-sm text-neutral-600 hover:text-green-600 flex items-center gap-1">
         <div className="px-2 py-1 bg-neutral-100 rounded-full text-xs">
-          Free Tier (3/10 recipes)
+          Free Tier ({recipes?.length || 0}/10 recipes)
         </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

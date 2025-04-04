@@ -90,7 +90,7 @@ export default function Navbar() {
             {currentUser && (
               <Link href="/my-recipes" className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center">
                 <Book className="h-4 w-4 mr-1" />
-                Let's Get Cookin {recipes?.length ? `(${recipes.length}/10)` : ''}
+                Let's Get Cookin
               </Link>
             )}
 
