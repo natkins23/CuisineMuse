@@ -6,6 +6,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu, Book, ChefHat } from "lucide-react";
+import { TierModal } from "@/components/ui/tier-modal";
 import { Button } from "@/components/ui/button";
 import AuthStatus from "@/components/auth/auth-status";
 import { useAuth } from "@/context/AuthContext";
@@ -86,6 +87,7 @@ export default function Navbar() {
               </Link>
             )}
 
+            <TierModal />
             <AuthStatus />
           </div>
 
