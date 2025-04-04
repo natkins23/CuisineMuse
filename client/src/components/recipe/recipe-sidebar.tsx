@@ -1,7 +1,7 @@
 import { Recipe } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, User, Utensils } from "lucide-react";
+import { Clock, User, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -9,6 +9,7 @@ interface RecipeSidebarProps {
   recipes: Recipe[];
   isLoading: boolean;
   onRecipeSelect?: (recipe: Recipe) => void;
+  onDelete?: (recipeId: string) => void;
 }
 
 export default function RecipeSidebar({ 
@@ -67,11 +68,11 @@ export default function RecipeSidebar({
         ) : (
           <div className="space-y-4">
             {recipes.map((recipe) => (
-              <Card 
-                key={recipe.id} 
-                className="cursor-pointer hover:shadow-md transition-all"
-                onClick={() => onRecipeSelect && onRecipeSelect(recipe)}
-              >
+              <Card key={recipe.id} className="hover:shadow-md transition-all">
+                <div 
+                  className="cursor-pointer"
+                  onClick={() => onRecipeSelect && onRecipeSelect(recipe)}
+                >
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="text-base font-medium line-clamp-1">
                     {recipe.title}
@@ -90,6 +91,21 @@ export default function RecipeSidebar({
                     </div>
                   </div>
                 </CardContent>
+                <div className="px-4 pb-3 flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onDelete && recipe.id) {
+                        onDelete(recipe.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

@@ -45,28 +45,9 @@ export default function MyRecipes() {
       <Navbar />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Toggleable */}
-        <aside 
-          className={`fixed md:static bg-white border-r border-neutral-200 h-full overflow-y-auto transition-all duration-300 ease-in-out z-10
-            ${sidebarOpen ? "w-80 translate-x-0" : "w-80 -translate-x-full md:translate-x-0"}`}
-        >
-          <div className="flex justify-between items-center p-4 border-b border-neutral-200">
-            <h2 className="font-semibold">Saved Recipes</h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="md:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              ✕
-            </Button>
-          </div>
-          <RecipeSidebar recipes={recipes || []} isLoading={isLoading} />
-        </aside>
-        
         {/* Main content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="flex items-center mb-6">
+          <div className="flex items-center justify-end mb-6">
             <Button 
               variant="outline" 
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -78,6 +59,39 @@ export default function MyRecipes() {
           
           <div className="max-w-3xl mx-auto">
             <ChatInterface />
+          </div>
+        </main>
+
+        {/* Sidebar - Toggleable */}
+        <aside 
+          className={`fixed md:static bg-white border-l border-neutral-200 h-full overflow-y-auto transition-all duration-300 ease-in-out z-10 right-0
+            ${sidebarOpen ? "w-80 translate-x-0" : "w-0 translate-x-full md:w-0"}`}
+        >
+          <div className="flex justify-between items-center p-4 border-b border-neutral-200">
+            <h2 className="font-semibold">Saved Recipes</h2>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+            >
+              ✕
+            </Button>
+          </div>
+          <RecipeSidebar 
+            recipes={recipes || []} 
+            isLoading={isLoading}
+            onDelete={async (recipeId) => {
+              try {
+                await fetch(`/api/recipes/${recipeId}`, { method: 'DELETE' });
+                // Update local state
+                const newRecipes = recipes?.filter(r => r.id !== recipeId);
+                queryClient.setQueryData(['/api/recipes', currentUser?.uid], newRecipes);
+              } catch (error) {
+                console.error('Error deleting recipe:', error);
+              }
+            }}
+          />
+        </aside>
           </div>
         </main>
       </div>
