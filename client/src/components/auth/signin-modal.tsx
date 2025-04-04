@@ -164,12 +164,27 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         projectId: auth.app.options.projectId
       });
       
+      // Wait for auth to be ready
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log("Auth methods response:", {
+      console.log("Auth methods check:", {
         email,
         methods,
+        isInitialized: !!auth,
+        currentUser: auth.currentUser?.email,
         timestamp: new Date().toISOString()
       });
+
+      // Double check auth state
+      const user = auth.currentUser;
+      if (user) {
+        console.log("Current auth state:", {
+          email: user.email,
+          providerData: user.providerData,
+          emailVerified: user.emailVerified
+        });
+      }
 
       if (!isSignUp) {
         // Sign In flow

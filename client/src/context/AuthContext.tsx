@@ -8,7 +8,8 @@ import {
   signInWithRedirect, 
   getRedirectResult,
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  fetchSignInMethodsForEmail
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -78,38 +79,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signInWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
-      
+
       // Add scopes if needed
       provider.addScope('email');
       provider.addScope('profile');
-      
+
       console.log("Initializing Google Sign-In with:", {
         providerId: provider.providerId,
         customParameters: provider.customParameters,
         scopes: provider.scopes,
         projectId: auth.app.options.projectId
       });
-      
+
       // Handle unauthorized domain error
       // This is a temporary solution to show user what they need to do
       // Ideally, the domain should be added to authorized domains in Firebase Console
       const currentDomain = window.location.origin;
-      
+
       // Set custom parameters
       provider.setCustomParameters({
         prompt: 'select_account',
         // The 'login_hint' parameter can help prevent the "illegal URL for new iframe" error
         login_hint: 'user@example.com'
       });
-      
+
       // Try popup first (for modal dialog)
       try {
         const result = await signInWithPopup(auth, provider);
-        console.log("Signed in successfully with popup:", result.user.displayName);
+        console.log("Google Sign-in Result:", {
+          displayName: result.user.displayName,
+          email: result.user.email,
+          providerId: result.user.providerId,
+          providerData: result.user.providerData,
+          metadata: result.user.metadata
+        });
+
+        // Verify the user is properly persisted
+        const methods = await fetchSignInMethodsForEmail(auth, result.user.email!);
+        console.log("Auth methods after Google sign-in:", methods);
+
         return result;
       } catch (popupError: any) {
         console.warn("Popup sign in failed, trying redirect:", popupError);
-        
+
         // If popup fails (common on mobile or with popup blockers), fall back to redirect
         if (popupError.code === 'auth/popup-blocked' || 
             popupError.code === 'auth/popup-closed-by-user' ||
