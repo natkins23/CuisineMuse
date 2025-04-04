@@ -1,7 +1,7 @@
 
 import { Recipe } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, User, X, ChefHat, Utensils } from "lucide-react";
+import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -9,28 +9,47 @@ interface RecipeModalProps {
   recipe: Recipe | null;
   isOpen: boolean;
   onClose: () => void;
+  onDelete?: (recipeId: string) => void;
 }
 
-export default function RecipeModal({ recipe, isOpen, onClose }: RecipeModalProps) {
+export default function RecipeModal({ recipe, isOpen, onClose, onDelete }: RecipeModalProps) {
   if (!recipe) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[80vw] h-[80vh] flex flex-col p-0">
         <div className="p-6 overflow-y-auto flex-1">
-          <DialogHeader className="relative mb-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute right-0 top-0"
-              onClick={onClose}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Badge variant="outline" className="mb-2 bg-orange-50 text-orange-700">
-              {recipe.mealType}
-            </Badge>
-            <DialogTitle className="text-2xl font-bold text-green-700">{recipe.title}</DialogTitle>
+          <DialogHeader className="relative px-0 mb-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <Badge variant="outline" className="mb-2 px-2 py-1 text-xs bg-orange-50 text-orange-700">
+                  {recipe.mealType}
+                </Badge>
+                <DialogTitle className="text-2xl font-bold text-green-700">{recipe.title}</DialogTitle>
+              </div>
+              <div className="flex gap-2">
+                {onDelete && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => {
+                      onDelete(recipe.id);
+                      onClose();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={onClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
           
           <div className="max-w-4xl mx-auto">
