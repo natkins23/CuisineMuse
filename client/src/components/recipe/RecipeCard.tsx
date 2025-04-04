@@ -2,13 +2,43 @@ import React from 'react';
 import { RecipeSuggestion } from '@/lib/recipeApi';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
+import { Clock, BookmarkPlus } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface RecipeCardProps {
   recipe: RecipeSuggestion;
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
+  const { currentUser } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setIsSaving(true);
+      const response = await fetch(`/api/recipes/${recipe.id}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: currentUser.uid
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save recipe');
+      }
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <Card className="h-full overflow-hidden flex flex-col transition-all duration-200 hover:shadow-md">
       <div className="relative h-48 overflow-hidden">
@@ -30,10 +60,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
       <CardContent className="flex-grow">
         <p className="text-gray-600 text-sm">{recipe.description}</p>
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
+      <CardFooter className="pt-2 pb-4 flex justify-between">
         <Badge variant="outline" className="bg-orange-50 text-orange-700 hover:bg-orange-100">
           View Recipe
         </Badge>
+        {currentUser && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            <BookmarkPlus className="h-4 w-4" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

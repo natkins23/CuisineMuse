@@ -83,6 +83,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Save recipe for user
+  app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
+    try {
+      const recipeId = Number(req.params.id);
+      const userId = req.body.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "User must be logged in" });
+      }
+
+      const user = await db.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Add recipe to user's saved recipes
+      const savedRecipes = user.savedRecipes || [];
+      if (!savedRecipes.includes(recipeId)) {
+        savedRecipes.push(recipeId);
+        await db.updateUser(userId, { savedRecipes });
+      }
+
+      res.json({ message: "Recipe saved successfully" });
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      res.status(500).json({ message: "Failed to save recipe" });
+    }
+  });
+
   // Delete recipe
   app.delete("/api/recipes/:id", async (req: Request, res: Response) => {
     try {

@@ -50,3 +50,10 @@ export type Recipe = typeof recipes.$inferSelect;
 
 export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
 export type Newsletter = typeof newsletters.$inferSelect;
+
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  savedRecipes?: number[]; // Array of recipe IDs
+}
