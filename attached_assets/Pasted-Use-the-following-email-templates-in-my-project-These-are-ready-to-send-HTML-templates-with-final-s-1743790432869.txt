@@ -1,0 +1,58 @@
+Use the following email templates in my project. These are ready-to-send HTML templates with final subject lines. Do not modify the copy — it’s intentional and portfolio-ready.
+
+---
+
+📧 TEMPLATE 1: ACCOUNT CREATION EMAIL  
+Send this to users after they sign up (Google or email/password).
+
+Subject:
+Welcome to CuisineMuse – Let’s get cooking 🍳
+
+HTML:
+<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto;">
+  <h1 style="color: #ff6f61;">Welcome to CuisineMuse!</h1>
+  <p>Thanks for signing up.</p>
+
+  <p>Your account is ready — you can now start creating recipes powered by AI, personalized to your taste, schedule, and what's already in your kitchen.</p>
+
+  <hr style="border: none; border-top: 1px solid #eee;" />
+
+  <ul>
+    <li>✨ Ask for meals in plain English</li>
+    <li>📋 Get clear, easy-to-follow instructions</li>
+    <li>🌍 Explore global flavors without the stress</li>
+  </ul>
+
+  <p>Let’s make cooking feel creative, not chaotic.</p>
+
+  <p style="margin-top: 2em;">– The CuisineMuse Team</p>
+
+  <hr style="border: none; border-top: 1px solid #eee;" />
+  <p style="font-size: 0.8em; color: #888;">This message confirms your new CuisineMuse account.</p>
+</div>
+
+---
+
+📧 TEMPLATE 2: NEWSLETTER SIGNUP EMAIL (The Flavor Feed)  
+Send this to users after they subscribe to the newsletter only.
+
+Subject:
+Welcome to the Flavor Feed 🥘
+
+HTML:
+<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto;">
+  <h1 style="color: #ff6f61;">You’re in! Welcome to <em>The Flavor Feed</em> 🥘</h1>
+
+  <p>Thanks for joining CuisineMuse’s weekly recipe inspiration newsletter.</p>
+
+  <p><strong>The Flavor Feed</strong> is your go-to for fresh, AI-powered cooking ideas — simple meals made smarter, one delicious email at a time.</p>
+
+  <hr style="border: none; border-top: 1px solid #eee;" />
+
+  <p>We’ll keep things quick, tasty, and tailored to real life. Because cooking should be exciting — not exhausting.</p>
+
+  <p style="margin-top: 2em;">Stay inspired,<br /><strong>The CuisineMuse Team</strong></p>
+
+  <hr style="border: none; border-top: 1px solid #eee;" />
+  <p style="font-size: 0.8em; color: #888;">You’re receiving this message because you signed up for The Flavor Feed newsletter from CuisineMuse.</p>
+</div>
