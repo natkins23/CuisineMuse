@@ -157,28 +157,36 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
       const { email, password } = form.getValues();
 
-      // Check if email exists and how it's authenticated
-      const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log("Auth methods for email:", methods);
+      try {
+        // Check authentication methods for email
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        console.log("Auth methods found for", email, ":", methods);
 
-      if (methods.includes('google.com')) {
-        setError("This email is associated with a Google account. Please sign in with Google.");
-        return;
-      }
+        if (!isSignUp) {
+          // Sign In flow
+          if (methods.includes('google.com')) {
+            setError("This account uses Google Sign-In. Please use that option instead.");
+            return;
+          }
+          if (methods.length === 0) {
+            setError("No account found with this email. Please sign up first.");
+            return;
+          }
+        } else {
+          // Sign Up flow
+          if (methods.length > 0) {
+            if (methods.includes('google.com')) {
+              setError("This email is already used with Google Sign-In. Please use that option instead.");
+            } else {
+              setError("An account already exists with this email. Please sign in instead.");
+            }
+            return;
+          }
+        }
 
-      if (!isSignUp && methods.length === 0) {
-        setError("No account found with this email. Please sign up.");
-        return;
-      }
-
-      if (isSignUp && methods.length > 0) {
-        setError("An account already exists with this email. Please sign in.");
-        return;
-      }
-
-      setIsSigningIn(true);
-      const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
-      const userCredential = await authFunction(email, password);
+        setIsSigningIn(true);
+        const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
+        const userCredential = await authFunction(email, password);
 
       if (isSignUp && userCredential?.user?.email) {
         try {
@@ -200,7 +208,14 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error during email auth:", error);
-      setError(error.message || "An error occurred during authentication");
+      
+      if (error.code === 'auth/wrong-password') {
+        setError("Incorrect password. Please try again.");
+      } else if (error.code === 'auth/too-many-requests') {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError(error.message || "An error occurred during authentication");
+      }
     } finally {
       setIsSigningIn(false);
     }
