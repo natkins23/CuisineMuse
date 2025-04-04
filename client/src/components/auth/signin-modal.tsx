@@ -55,14 +55,14 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       } else {
         // Map Firebase error codes to user-friendly messages
       const errorMessage = {
-        'auth/invalid-credential': 'Invalid email or password. Please try again.',
+        'auth/invalid-credential': 'These credentials do not exist. Please try again or sign up.',
         'auth/user-disabled': 'This account has been disabled.',
-        'auth/user-not-found': 'No account found with this email.',
-        'auth/wrong-password': 'Incorrect password. Please try again.',
-        'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
-        'auth/popup-closed-by-user': 'Sign in was cancelled. Please try again.',
+        'auth/user-not-found': 'These credentials do not exist. Please try again or sign up.',
+        'auth/wrong-password': 'These credentials do not exist. Please try again or sign up.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+        'auth/popup-closed-by-user': 'Sign in was cancelled.',
         'auth/unauthorized-domain': 'This domain is not authorized for sign in.',
-      }[error.code] || 'An error occurred during sign in. Please try again.';
+      }[error.code] || 'An error occurred. Please try again.';
       
       setError(errorMessage);
       }
