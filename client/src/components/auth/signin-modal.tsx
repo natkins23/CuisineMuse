@@ -164,13 +164,12 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         projectId: auth.app.options.projectId
       });
       
-      try {
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        console.log("Auth methods response:", {
-          email,
-          methods,
-          timestamp: new Date().toISOString()
-        });
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      console.log("Auth methods response:", {
+        email,
+        methods,
+        timestamp: new Date().toISOString()
+      });
 
       if (!isSignUp) {
         // Sign In flow
