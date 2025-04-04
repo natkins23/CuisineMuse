@@ -180,8 +180,26 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         const methods = await fetchSignInMethodsForEmail(auth, email);
         console.log("Auth methods found for", email, ":", methods);
 
-      if (!isSignUp) {
-        // Sign In flow
+      setIsSigningIn(true);
+      const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
+      await authFunction(email, password);
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Error during auth:", error);
+      if (error.code === 'auth/wrong-password') {
+        setError("Incorrect password. Please try again.");
+      } else if (error.code === 'auth/too-many-requests') {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError(error.message || "An error occurred during authentication");
+      }
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  if (!isSignUp) {
+    // Sign In flow
         if (methods.includes('google.com')) {
           setError("This account uses Google Sign-In. Please use that option instead.");
           return;
