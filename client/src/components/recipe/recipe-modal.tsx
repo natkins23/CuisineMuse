@@ -19,6 +19,13 @@ export default function RecipeModal({
   onDelete,
 }: RecipeModalProps) {
   if (!recipe) return null;
+  const [showRemixAlert, setShowRemixAlert] = React.useState(false);
+
+  const handleRemix = () => {
+    // TODO: Implement remix functionality
+    setShowRemixAlert(false);
+    alert("Remix feature coming soon!");
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -35,7 +42,7 @@ export default function RecipeModal({
                 variant="ghost"
                 size="icon"
                 className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                onClick={() => alert("Remix feature coming soon!")}
+                onClick={() => setShowRemixAlert(true)}
               >
                 <svg
                   className="h-5 w-5"
@@ -51,6 +58,32 @@ export default function RecipeModal({
                   />
                 </svg>
               </Button>
+              
+              {/* Remix confirmation */}
+              <AlertDialog
+                open={showRemixAlert}
+                onOpenChange={(open) => {
+                  if (!open) setShowRemixAlert(false);
+                }}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remix Recipe</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Create a copy of "{recipe.title}" to customize it. The original recipe will remain unchanged.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleRemix}
+                      className="bg-blue-500 hover:bg-blue-600"
+                    >
+                      Remix Recipe
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               {onDelete && (
                 <Button
                   variant="ghost"
