@@ -2,12 +2,10 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "sk-placeholder"
-});
+// Initialize Google Generative AI client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "placeholder-key");
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -88,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Generate recipe using OpenAI
+  // Generate recipe using Google Gemini
   app.post("/api/generate-recipe", async (req: Request, res: Response) => {
     try {
       const { prompt, mealType = "", mainIngredient = "", dietary = "" } = req.body;
@@ -97,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Prompt is required" });
       }
       
-      // Construct detailed prompt for OpenAI
+      // Construct detailed prompt for Gemini
       const detailedPrompt = `
         Generate a recipe based on the following details:
         User Request: ${prompt}
@@ -115,23 +113,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - servings: Number of servings the recipe makes
       `;
       
-      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: "You are an expert chef who specializes in creating delicious recipes. Provide detailed, accurate recipes with clear instructions." },
-          { role: "user", content: detailedPrompt }
-        ],
-        response_format: { type: "json_object" }
-      });
+      // Use Gemini Pro model
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       
-      const recipeData = JSON.parse(response.choices[0].message.content);
+      // Configure the generation
+      const result = await model.generateContent({
+        contents: [
+          { role: "user", parts: [{ text: detailedPrompt }] }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024,
+        }
+      });
+
+      // Get the response text
+      const responseText = result.response.text();
+      
+      // Extract the JSON part from the response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No valid JSON found in the response");
+      }
+      
+      const recipeData = JSON.parse(jsonMatch[0]);
       res.json(recipeData);
-    } catch (error) {
-      console.error("OpenAI API error:", error);
+    } catch (error: any) {
+      console.error("Gemini API error:", error);
       res.status(500).json({ 
         message: "Failed to generate recipe", 
-        error: error.message
+        error: error.message || String(error)
       });
     }
   });

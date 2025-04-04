@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import AuthStatus from "@/components/auth/auth-status";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser } = useAuth();
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -30,9 +33,12 @@ export default function Navbar() {
             <a href="#features" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">Features</a>
             <a href="#how-it-works" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">How It Works</a>
             <a href="#recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">Recipes</a>
-            <Button className="bg-orange-500 hover:bg-orange-600 transition-colors">
-              Get Started
-            </Button>
+            {!currentUser && (
+              <Button className="bg-orange-500 hover:bg-orange-600 transition-colors">
+                Get Started
+              </Button>
+            )}
+            <AuthStatus />
           </div>
           
           <div className="flex items-center sm:hidden">
@@ -66,9 +72,14 @@ export default function Navbar() {
                     >
                       Recipes
                     </a>
-                    <Button className="bg-orange-500 hover:bg-orange-600 transition-colors mt-4">
-                      Get Started
-                    </Button>
+                    {!currentUser && (
+                      <Button className="bg-orange-500 hover:bg-orange-600 transition-colors mt-4">
+                        Get Started
+                      </Button>
+                    )}
+                    <div className="mt-2">
+                      <AuthStatus />
+                    </div>
                   </div>
                 </div>
               </SheetContent>
