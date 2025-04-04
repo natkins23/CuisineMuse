@@ -170,6 +170,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newsletter = await db.subscribeToNewsletter(validatedData.data.email);
+
+      // Try to send a welcome email to the subscriber
+      try {
+        await sendTestEmail(validatedData.data.email);
+        console.log('Welcome email sent to new subscriber:', validatedData.data.email);
+      } catch (emailError) {
+        // Just log the error but don't fail the subscription
+        console.error('Failed to send welcome email:', emailError);
+      }
+      
       res.status(201).json(newsletter);
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
@@ -202,7 +212,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const success = await sendRecipeEmail(validatedData.data);
+      let email = validatedData.data.recipientEmail;
+      
+      // For test environments, ensure we use a valid test email for Resend
+      // In production this check would be removed
+      if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
+        console.log('Using test email for Resend in development environment');
+        email = 'delivered@resend.dev';
+      }
+      
+      const success = await sendRecipeEmail({
+        ...validatedData.data,
+        recipientEmail: email
+      });
       
       if (!success) {
         return res.status(500).json({ message: "Failed to send email" });
@@ -231,7 +253,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const success = await sendTestEmail(validatedData.data.email);
+      let email = validatedData.data.email;
+      
+      // For test environments, ensure we use a valid test email for Resend
+      // In production this check would be removed
+      if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
+        console.log('Using test email for Resend in development environment');
+        email = 'delivered@resend.dev';
+      }
+      
+      const success = await sendTestEmail(email);
       
       if (!success) {
         return res.status(500).json({ message: "Failed to send test email" });

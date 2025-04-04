@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Recipe Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #4a5568;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Email Recipe Functionality</h1>
+    
+    <div class="form-group">
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" placeholder="your@email.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="title">Recipe Title:</label>
+        <input type="text" id="title" value="Delicious Chocolate Cake">
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea id="description" rows="2">A rich and moist chocolate cake perfect for any celebration.</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="ingredients">Ingredients (one per line):</label>
+        <textarea id="ingredients" rows="5">2 cups all-purpose flour
+2 cups sugar
+3/4 cup unsweetened cocoa powder
+2 teaspoons baking soda
+1 teaspoon baking powder
+1 teaspoon salt
+2 eggs
+1 cup buttermilk
+1/2 cup vegetable oil
+2 teaspoons vanilla extract
+1 cup hot coffee</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="instructions">Instructions (one per line):</label>
+        <textarea id="instructions" rows="5">Preheat oven to 350°F (175°C). Grease and flour two 9-inch round cake pans.
+In a large bowl, combine flour, sugar, cocoa, baking soda, baking powder, and salt.
+Add eggs, buttermilk, oil, and vanilla; beat on medium speed for 2 minutes.
+Stir in hot coffee (batter will be thin). Pour into prepared pans.
+Bake for 30-35 minutes or until a toothpick inserted in center comes out clean.
+Cool in pans for 10 minutes then remove to wire racks to cool completely.</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="mealType">Meal Type:</label>
+        <input type="text" id="mealType" value="Dessert">
+    </div>
+    
+    <div class="form-group">
+        <label for="prepTime">Prep Time (minutes):</label>
+        <input type="number" id="prepTime" value="45">
+    </div>
+    
+    <div class="form-group">
+        <label for="servings">Servings:</label>
+        <input type="number" id="servings" value="12">
+    </div>
+    
+    <button id="sendButton">Send Recipe Email</button>
+    <button id="testButton">Send Test Email</button>
+    
+    <div id="result" style="display: none;"></div>
+    
+    <script>
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showResult('Please enter an email address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/email/recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipientEmail: email,
+                        recipe: {
+                            title: document.getElementById('title').value,
+                            description: document.getElementById('description').value,
+                            ingredients: document.getElementById('ingredients').value,
+                            instructions: document.getElementById('instructions').value,
+                            mealType: document.getElementById('mealType').value,
+                            prepTime: parseInt(document.getElementById('prepTime').value) || 0,
+                            servings: parseInt(document.getElementById('servings').value) || 0
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`Success: ${data.message}`, 'success');
+                } else {
+                    showResult(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`Error: ${error.message}`, 'error');
+            }
+        });
+        
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showResult('Please enter an email address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/email/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`Success: ${data.message}`, 'success');
+                } else {
+                    showResult(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`Error: ${error.message}`, 'error');
+            }
+        });
+        
+        function showResult(message, type) {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = message;
+            resultElement.className = `result ${type}`;
+            resultElement.style.display = 'block';
+            
+            // Scroll to the result
+            resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
