@@ -4,6 +4,8 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fetchSignInMethodsForEmail } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -145,21 +147,32 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Authentication Error</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
-              {error === "Firebase: Error (auth/invalid-credential)." 
-                ? (
-                  <>
-                    Your credentials didn't match. Try again.
-                    <br />
-                    <Button 
-                      variant="link" 
-                      className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
-                      onClick={() => alert("Password reset functionality coming soon!")}
-                    >
-                      Reset your password
-                    </Button>
-                  </>
-                )
-                : error}
+              {error === "Firebase: Error (auth/invalid-credential)." && (
+                async () => {
+                  try {
+                    const methods = await fetchSignInMethodsForEmail(auth, form.getValues().email);
+                    if (methods.length > 0) {
+                      return (
+                        <>
+                          Your password is incorrect. Try again.
+                          <br />
+                          <Button 
+                            variant="link" 
+                            className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
+                            onClick={() => alert("Password reset functionality coming soon!")}
+                          >
+                            Reset your password
+                          </Button>
+                        </>
+                      );
+                    } else {
+                      return "No account found with this email. Please sign up.";
+                    }
+                  } catch (e) {
+                    return error;
+                  }
+                }
+              ) || error}
             </AlertDescription>
           </Alert>
         )}
