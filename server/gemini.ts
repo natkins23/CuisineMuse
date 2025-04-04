@@ -92,21 +92,20 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
 - Complete list of ingredients with measurements
 - Clear step-by-step instructions
 
-Keep your initial response very brief, then include complete recipe details in valid JSON format:
+Your response should begin with ONLY a brief greeting and recipe introduction (50 words max), followed by the complete recipe in this JSON structure:
 
 {
-  "recipe": {
-    "title": "Recipe Title",
-    "cooking_time": "30 minutes",
-    "image_url": "https://unsplash.com/photos/relevant-image",
-    "description": "Brief description of the dish",
-    "ingredients": ["Ingredient 1 with quantity", "Ingredient 2 with quantity", "Ingredient 3 with quantity"],
-    "instructions": ["Step 1 with clear instruction", "Step 2 with clear instruction", "Step 3 with clear instruction"],
-    "servings": "4 servings"
-  }
+  "title": "Recipe Title",
+  "description": "Brief description of the dish",
+  "ingredients": "Complete ingredient list with measurements, each item on a new line",
+  "instructions": "Step-by-step instructions, each step on a new line",
+  "mealType": "Appetizer/Main/Dessert",
+  "prepTime": 30,
+  "servings": 4
 }
 
-Your response MUST include both your brief text answer AND the complete recipe JSON data.`}] }],
+DO NOT include any JSON code blocks syntax like \`\`\`json or \`\`\` in your response. The JSON must be properly formatted and directly parseable.
+`}] }],
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1500,
@@ -114,28 +113,36 @@ Your response MUST include both your brief text answer AND the complete recipe J
     });
     
     const responseText = result.response.text();
+    console.log("Full response from Gemini:", responseText);
     
-    // Extract recipe JSON from the response
-    const recipeJsonMatch = responseText.match(/\{[\s\S]*"recipe":\s*\{[\s\S]*\}[\s\S]*\}/);
-    let recipeData = null;
+    // First get the conversation text - everything before the first '{' character
+    const jsonStartIndex = responseText.indexOf('{');
+    let conversationText = responseText;
+    let jsonText = '';
     
-    if (recipeJsonMatch) {
-      try {
-        // Parse the JSON from the response
-        const parsedResponse = JSON.parse(recipeJsonMatch[0]);
-        if (parsedResponse.recipe) {
-          recipeData = parsedResponse.recipe;
-        }
-      } catch (e) {
-        console.error("Failed to parse recipe JSON:", e);
+    if (jsonStartIndex !== -1) {
+      // Split the text into conversation and JSON parts
+      conversationText = responseText.substring(0, jsonStartIndex).trim();
+      jsonText = responseText.substring(jsonStartIndex);
+      
+      // Clean up any trailing text after JSON if present
+      const lastBraceIndex = jsonText.lastIndexOf('}');
+      if (lastBraceIndex !== -1) {
+        jsonText = jsonText.substring(0, lastBraceIndex + 1);
       }
     }
     
-    // Get the conversation text without the JSON
-    let conversationText = responseText;
-    if (recipeJsonMatch) {
-      // Remove the JSON part from the conversation text
-      conversationText = responseText.replace(recipeJsonMatch[0], '').trim();
+    // Parse the JSON part
+    let recipeData = null;
+    if (jsonText) {
+      try {
+        console.log("Attempting to parse JSON:", jsonText);
+        recipeData = JSON.parse(jsonText);
+        console.log("Successfully parsed recipe data:", recipeData);
+      } catch (e) {
+        console.error("Failed to parse recipe JSON:", e);
+        console.error("JSON that failed to parse:", jsonText);
+      }
     }
     
     // Create response object
@@ -148,25 +155,59 @@ Your response MUST include both your brief text answer AND the complete recipe J
     
     // If we have recipe data, add it to the response
     if (recipeData) {
+      // Convert string time to minutes if needed
+      let prepTimeValue = recipeData.prepTime;
+      if (typeof prepTimeValue === 'string') {
+        // Try to extract the number from a string like "30 minutes"
+        const timeMatch = prepTimeValue.match(/(\d+)/);
+        if (timeMatch) {
+          prepTimeValue = parseInt(timeMatch[1]);
+        } else {
+          prepTimeValue = 30; // default
+        }
+      }
+      
+      // Convert servings to number if needed
+      let servingsValue = recipeData.servings;
+      if (typeof servingsValue === 'string') {
+        // Try to extract the number from a string like "4 servings"
+        const servingsMatch = servingsValue.match(/(\d+)/);
+        if (servingsMatch) {
+          servingsValue = parseInt(servingsMatch[1]);
+        } else {
+          servingsValue = 4; // default
+        }
+      }
+      
+      // Format cooking time for display
+      const cookingTimeDisplay = typeof prepTimeValue === 'number' 
+        ? `${prepTimeValue} minutes` 
+        : (recipeData.cooking_time || "30 minutes");
+      
+      // Format servings for display
+      const servingsDisplay = typeof servingsValue === 'number'
+        ? `${servingsValue} servings`
+        : (recipeData.servings || "4 servings");
+      
       response.recipe = {
         title: recipeData.title || "Delicious Recipe",
-        time: recipeData.cooking_time || "30 minutes",
-        servings: recipeData.servings || "4 servings",
+        time: cookingTimeDisplay,
+        servings: servingsDisplay,
         recipeData: {
           title: recipeData.title || "Delicious Recipe",
           description: recipeData.description || "A tasty dish",
-          ingredients: recipeData.ingredients ? recipeData.ingredients.join("\n") : "No ingredients specified",
-          instructions: recipeData.instructions ? recipeData.instructions.join("\n") : "No instructions provided",
+          ingredients: recipeData.ingredients || "No ingredients specified",
+          instructions: recipeData.instructions || "No instructions provided",
           mealType: recipeData.mealType || "Main Dish",
-          prepTime: parseInt(recipeData.cooking_time) || 30,
-          servings: parseInt(recipeData.servings) || 4
+          prepTime: typeof prepTimeValue === 'number' ? prepTimeValue : 30,
+          servings: typeof servingsValue === 'number' ? servingsValue : 4
         }
       };
       
       // Create a single suggestion from the recipe data
       response.suggestions = [{
         title: recipeData.title || "Delicious Recipe",
-        cooking_time: recipeData.cooking_time || "30 minutes",
+        cooking_time: cookingTimeDisplay,
         image_url: recipeData.image_url || "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
         description: recipeData.description || "A tasty dish"
       }];
