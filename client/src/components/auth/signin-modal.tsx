@@ -4,6 +4,9 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { LogIn, AlertTriangle, ExternalLink } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
@@ -15,13 +18,28 @@ interface SignInModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const authSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string()
+    .min(1, "Password is required")
+    .min(7, "Password must be at least 7 characters")
+});
+
+type AuthFormData = z.infer<typeof authSchema>;
+
 export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  
+  const form = useForm<AuthFormData>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      email: "",
+      password: ""
+    }
+  });
 
   const handleGoogleSignIn = async () => {
     try {
@@ -75,21 +93,12 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const handleEmailSignIn = async (isSignUp: boolean = false) => {
     try {
       setError(null);
-      
-      const authSchema = z.object({
-        email: z.string().email("Please enter a valid email address"),
-        password: z.string().min(1, "Please enter your password")
-          .refine(val => !isSignUp || val.length >= 6, {
-            message: "Password must be at least 6 characters long"
-          })
-      });
-      
-      const result = authSchema.safeParse({ email, password });
-      
-      if (!result.success) {
-        setError(result.error.errors[0].message);
+      const isValid = await form.trigger();
+      if (!isValid) {
         return;
       }
+      
+      const { email, password } = form.getValues();
       
       setIsSigningIn(true);
       const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
@@ -177,18 +186,42 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Form {...form}>
+              <form className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
             <div className="flex gap-2">
               <Button 
                 className="flex-1"
