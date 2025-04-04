@@ -21,11 +21,14 @@ function CheckEmailExists({ email, onGoogleSignIn }: { email: string; onGoogleSi
 
   useEffect(() => {
     const checkEmail = async () => {
+      console.log("Checking email:", email);
       try {
         const methods = await fetchSignInMethodsForEmail(auth, email);
+        console.log("Auth methods found:", methods);
         setAuthMethods(methods);
         setError(false);
       } catch (e) {
+        console.error("Error checking email:", e);
         setError(true);
       }
     };
