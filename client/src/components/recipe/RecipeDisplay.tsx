@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { GeneratedRecipe } from '@/lib/recipeApi';
@@ -9,10 +9,30 @@ interface RecipeDisplayProps {
 }
 
 const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipeData, compact = false }) => {
+  // Debug recipe data
+  useEffect(() => {
+    console.log("RecipeDisplay mounted with data:", recipeData);
+    console.log("Is compact mode:", compact);
+    
+    if (!recipeData) {
+      console.error("Recipe data is undefined or null");
+    } else if (!recipeData.ingredients || !recipeData.instructions) {
+      console.error("Recipe data missing essential components:", recipeData);
+    }
+  }, [recipeData, compact]);
+
+  // If no recipe data, show error message
+  if (!recipeData) {
+    console.error("No recipe data provided to RecipeDisplay component");
+    return <div className="bg-red-100 p-3 text-red-700 rounded">Recipe data not available</div>;
+  }
+
   // Format lists from string with newlines to arrays
   const formatList = (content: string | undefined): string[] => {
     if (!content) return [];
-    return content.split('\n').filter(item => item.trim().length > 0);
+    const result = content.split('\n').filter(item => item.trim().length > 0);
+    console.log(`Formatting list from '${content}' to:`, result);
+    return result;
   };
 
   const ingredients = formatList(recipeData.ingredients);

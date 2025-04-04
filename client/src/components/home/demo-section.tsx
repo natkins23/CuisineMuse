@@ -117,30 +117,32 @@ export default function DemoSection() {
         dietary: detectedDietary?.toLowerCase()
       });
       
-      // We'll update messages with our enhanced messageWithRecipe below
-      
       // Log the complete response for debugging
       console.log("Complete API response:", response);
       
-      // Create a new array of messages
-      let updatedMessages;
-      
-      // Check for recipe data in the response
+      // IMPORTANT: When response contains recipe data, make sure it's correctly attached to the message
       if (response.recipe?.recipeData) {
         console.log("Recipe data detected:", response.recipe.recipeData);
         
-        // We need to ensure recipe data is attached to the message
-        const messageWithRecipe = {
-          ...response.message,
-          recipe: response.recipe
+        // Explicitly create a complete message object with the recipe data
+        const completeMessage: ChatMessage = {
+          role: "assistant",
+          content: response.message.content,
+          recipe: {
+            title: response.recipe.title,
+            time: response.recipe.time,
+            servings: response.recipe.servings,
+            recipeData: response.recipe.recipeData
+          }
         };
         
-        console.log("Message with recipe:", messageWithRecipe);
+        console.log("Created complete message with recipe:", completeMessage);
         
-        // Use the message with the recipe data
-        updatedMessages = [...newMessages, messageWithRecipe];
+        // Add this message to the messages state
+        const messagesWithRecipe = [...newMessages, completeMessage];
+        setMessages(messagesWithRecipe);
         
-        // If we also have suggestions, store them
+        // Update recipe suggestions
         if (response.suggestions && response.suggestions.length > 0) {
           setRecipeSuggestions(response.suggestions);
         } else if (response.recipe.title) {
@@ -156,9 +158,10 @@ export default function DemoSection() {
         // Hide the suggestions UI when displaying recipe results
         setShowSuggestions(false);
       } 
-      // If no recipe data, just use the message as is
+      // If no recipe data, just use the regular message
       else {
-        updatedMessages = [...newMessages, response.message];
+        // Directly add the assistant's response to messages
+        setMessages([...newMessages, response.message]);
         
         // Check for recipe suggestions without recipe data
         if (response.suggestions && response.suggestions.length > 0) {
@@ -168,10 +171,6 @@ export default function DemoSection() {
           setShowSuggestions(false);
         }
       }
-      
-      // Update the messages state with our new messages array
-      console.log("Setting messages:", updatedMessages);
-      setMessages(updatedMessages);
     } catch (error: any) {
       console.error("Chat error:", error);
       
@@ -305,12 +304,18 @@ export default function DemoSection() {
                           
                           {/* Show RecipeDisplay component inline if recipeData exists */}
                           {message.recipe.recipeData && (
-                            <div className="mt-3 bg-white rounded-md border border-neutral-100">
-                              <RecipeDisplay 
-                                recipeData={message.recipe.recipeData} 
-                                compact={true} 
-                              />
-                            </div>
+                            <>
+                              {/* This is a workaround to understand why RecipeDisplay might not be showing */}
+                              <div className="bg-red-50 text-xs p-2 my-2 rounded overflow-auto max-h-40">
+                                <pre>Debug: {JSON.stringify(message.recipe.recipeData, null, 2)}</pre>
+                              </div>
+                              <div className="mt-3 bg-white rounded-md border border-neutral-100">
+                                <RecipeDisplay 
+                                  recipeData={message.recipe.recipeData} 
+                                  compact={true} 
+                                />
+                              </div>
+                            </>
                           )}
                           
                           <button className="mt-3 flex items-center text-green-600 text-sm font-medium hover:text-green-800">
