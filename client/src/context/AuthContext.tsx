@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<any>;
   logOut: () => Promise<void>;
 }
 
@@ -72,16 +72,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Sign in with Google popup (for modal dialog)
+  // Sign in with Google
   async function signInWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
       
-      // Use popup for modal dialog
-      await signInWithPopup(auth, provider);
+      // Add scopes if needed
+      provider.addScope('email');
+      provider.addScope('profile');
       
-      // Alternatively, you can use redirect for a full page redirect approach
-      // await signInWithRedirect(auth, provider);
+      // Set custom parameters
+      provider.setCustomParameters({
+        prompt: 'select_account',
+        // The 'login_hint' parameter can help prevent the "illegal URL for new iframe" error
+        login_hint: 'user@example.com'
+      });
+      
+      // Try popup first (for modal dialog)
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Signed in successfully with popup:", result.user.displayName);
+        return result;
+      } catch (popupError: any) {
+        console.warn("Popup sign in failed, trying redirect:", popupError);
+        
+        // If popup fails (common on mobile or with popup blockers), fall back to redirect
+        if (popupError.code === 'auth/popup-blocked' || 
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.message?.includes('iframe')) {
+          // Use redirect as fallback
+          await signInWithRedirect(auth, provider);
+          return null; // The redirect will reload the page
+        }
+        throw popupError; // Re-throw if it's not a popup issue
+      }
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       toast({
