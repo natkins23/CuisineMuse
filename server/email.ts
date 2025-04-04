@@ -60,7 +60,7 @@ export async function sendRecipeEmail({ recipe, recipientEmail }: RecipeEmailDat
     console.log('Attempting to send email via Resend to:', recipientEmail);
     // Send email using Resend
     const { data, error } = await resend.emails.send({
-      from: 'Chef Pierre <noreply@resend.dev>',
+      from: 'CuisineMuse <no-reply@resend.dev>',
       to: [recipientEmail],
       subject: `Recipe: ${recipe.title}`,
       html: htmlContent,
