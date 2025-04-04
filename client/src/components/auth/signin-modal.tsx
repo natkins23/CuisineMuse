@@ -158,36 +158,24 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       const { email, password } = form.getValues();
       
       // Check authentication methods for email
-      console.log("Checking auth methods for email:", email, "with auth instance:", {
-        initialized: !!auth,
-        currentUser: auth.currentUser,
-        projectId: auth.app.options.projectId
-      });
-      
-      // Wait for auth to be ready
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const methods = await fetchSignInMethodsForEmail(auth, email);
       console.log("Auth methods check:", {
         email,
         methods,
         isInitialized: !!auth,
-        currentUser: auth.currentUser?.email,
-        timestamp: new Date().toISOString()
+        currentUser: auth.currentUser?.email
       });
-
-      // Double check auth state
-      const user = auth.currentUser;
-      if (user) {
-        console.log("Current auth state:", {
-          email: user.email,
-          providerData: user.providerData,
-          emailVerified: user.emailVerified
-        });
-      }
 
       if (!isSignUp) {
         // Sign In flow
+        if (methods.includes('google.com')) {
+          setError("This account uses Google Sign-In. Please use that option.");
+          return;
+        }
+        if (methods.length === 0) {
+          setError("No account found with this email. If you signed up with Google, please use 'Sign in with Google'.");
+          return;
+        }
         if (methods.includes('google.com')) {
           setError("This account uses Google Sign-In. Please use that option instead.");
           return;
@@ -233,7 +221,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     } catch (error: any) {
       console.error("Error during email auth:", error);
       
-      if (error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         setError("Incorrect password. Please try again.");
       } else if (error.code === 'auth/too-many-requests') {
         setError("Too many attempts. Please try again later.");
