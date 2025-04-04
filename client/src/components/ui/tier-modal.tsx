@@ -18,6 +18,9 @@ export function TierModal() {
     queryKey: ['/api/recipes', currentUser?.uid],
     enabled: !!currentUser,
   });
+  
+  if (!currentUser) return null;
+  
   return (
     <Dialog>
       <DialogTrigger className="text-sm text-neutral-600 hover:text-green-600 flex items-center gap-1">
