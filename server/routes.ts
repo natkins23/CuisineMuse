@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { firestoreStorage } from "./firestore";
 import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
-import { generateRecipe } from "./gemini";
+import { generateRecipe, generateChatResponse } from "./gemini";
 import { verifyFirebaseToken } from "./firebase-admin";
 
 // Use Firestore storage instead of in-memory storage
@@ -115,6 +115,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Gemini API error:", error);
       res.status(500).json({ 
         message: "Failed to generate recipe", 
+        error: error.message || String(error)
+      });
+    }
+  });
+  
+  // Chat conversation with recipe assistant
+  app.post("/api/chat", async (req: Request, res: Response) => {
+    try {
+      const { messages, mealType, mainIngredient, dietary } = req.body;
+      
+      if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ message: "Messages array is required" });
+      }
+      
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage || lastMessage.role !== "user" || !lastMessage.content) {
+        return res.status(400).json({ message: "Last message must be from user with content" });
+      }
+      
+      const chatResponse = await generateChatResponse({
+        messages,
+        mealType,
+        mainIngredient,
+        dietary
+      });
+      
+      res.json(chatResponse);
+    } catch (error: any) {
+      console.error("Gemini Chat API error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate chat response", 
         error: error.message || String(error)
       });
     }

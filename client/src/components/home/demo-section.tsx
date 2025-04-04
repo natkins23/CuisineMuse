@@ -2,27 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SuggestionChip from "@/components/ui/suggestion-chip";
-import { Zap, User, FileDown } from "lucide-react";
+import { Zap, User, FileDown, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Chat message types
-type MessageRole = "assistant" | "user";
-
-interface ChatMessage {
-  role: MessageRole;
-  content: string;
-  recipe?: {
-    title: string;
-    time: string;
-    servings: string;
-  };
-}
+import { ChatMessage, sendChatMessage } from "@/lib/recipeApi";
+import { useToast } from "@/hooks/use-toast";
 
 // Demo meal type suggestions
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack"];
 const ingredientSuggestions = ["Add broccoli", "Add bell peppers", "Add zucchini", "Under 30 minutes"];
 
 export default function DemoSection() {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -31,9 +21,12 @@ export default function DemoSection() {
   ]);
   
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentMealType, setCurrentMealType] = useState<string | undefined>();
+  const [currentIngredient, setCurrentIngredient] = useState<string | undefined>();
   
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return;
     
     // Add user message
     const userMessage: ChatMessage = { 
@@ -43,20 +36,56 @@ export default function DemoSection() {
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInputValue("");
+    setIsLoading(true);
     
-    // Simulate AI response after a small delay
-    setTimeout(() => {
-      const assistantMessage: ChatMessage = { 
-        role: "assistant", 
-        content: "Here's a quick chicken and vegetable stir-fry:",
-        recipe: {
-          title: "Quick Chicken & Vegetable Stir-Fry",
-          time: "25 minutes",
-          servings: "4 servings"
+    try {
+      // Extract meal type and ingredient info from inputs
+      const lowerInput = inputValue.toLowerCase();
+      let detectedMealType = currentMealType;
+      let detectedIngredient = currentIngredient;
+      
+      // Simple detection - this could be more sophisticated
+      if (!detectedMealType) {
+        for (const type of mealTypes) {
+          if (lowerInput.includes(type.toLowerCase())) {
+            detectedMealType = type;
+            setCurrentMealType(type);
+            break;
+          }
         }
-      };
-      setMessages([...newMessages, assistantMessage]);
-    }, 1500);
+      }
+      
+      // Check for ingredient mentions
+      for (const ingredient of ingredientSuggestions) {
+        const simplifiedIngredient = ingredient.replace("Add ", "").toLowerCase();
+        if (lowerInput.includes(simplifiedIngredient)) {
+          detectedIngredient = simplifiedIngredient;
+          setCurrentIngredient(simplifiedIngredient);
+          break;
+        }
+      }
+      
+      // Send to API
+      const response = await sendChatMessage({
+        messages: newMessages,
+        mealType: detectedMealType,
+        mainIngredient: detectedIngredient,
+        dietary: lowerInput.includes("vegetarian") ? "vegetarian" : 
+                 lowerInput.includes("vegan") ? "vegan" : undefined
+      });
+      
+      // Add AI response to chat
+      setMessages([...newMessages, response.message]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleChipClick = (chipText: string) => {
@@ -189,15 +218,22 @@ export default function DemoSection() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about a recipe or ingredient..."
+                  disabled={isLoading}
                   className="flex-1 border border-neutral-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <Button 
                   onClick={handleSend}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-r-lg transition-colors"
+                  disabled={isLoading}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-r-lg transition-colors disabled:opacity-50"
                 >
-                  <ArrowRightIcon className="h-5 w-5" />
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRightIcon className="h-5 w-5" />}
                 </Button>
               </div>
+              {isLoading && (
+                <div className="flex items-center justify-center mt-3">
+                  <p className="text-sm text-neutral-500">Cooking up a response...</p>
+                </div>
+              )}
             </div>
           </div>
 
