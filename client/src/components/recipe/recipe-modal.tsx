@@ -29,7 +29,7 @@ export default function RecipeModal({
   onDelete,
 }: RecipeModalProps) {
   if (!recipe) return null;
-
+  
   const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
 
   const handleDelete = async () => {
@@ -39,8 +39,6 @@ export default function RecipeModal({
       onClose();
     }
   };
-
-  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : []; //Handle non-array ingredients
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -140,7 +138,7 @@ export default function RecipeModal({
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                  {ingredients.map((ingredient, index) => (
+                  {recipe.ingredients?.map((ingredient, index) => (
                     <li
                       key={index}
                       className="flex items-center gap-2 text-sm text-gray-700 list-none"
