@@ -14,6 +14,41 @@ import { LogIn, AlertTriangle, ExternalLink } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+
+function CheckEmailExists({ email }: { email: string }) {
+  const [exists, setExists] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkEmail = async () => {
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        setExists(methods.length > 0);
+      } catch (e) {
+        setExists(null);
+      }
+    };
+    checkEmail();
+  }, [email]);
+
+  if (exists === null) return <>Authentication error. Please try again.</>;
+  
+  return exists ? (
+    <>
+      Your password is incorrect. Try again.
+      <br />
+      <Button 
+        variant="link" 
+        className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
+        onClick={() => alert("Password reset functionality coming soon!")}
+      >
+        Reset your password
+      </Button>
+    </>
+  ) : (
+    <>No account found with this email. Please sign up.</>
+  );
+}
 
 interface SignInModalProps {
   open: boolean;
@@ -147,32 +182,11 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Authentication Error</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
-              {error === "Firebase: Error (auth/invalid-credential)." && (
-                async () => {
-                  try {
-                    const methods = await fetchSignInMethodsForEmail(auth, form.getValues().email);
-                    if (methods.length > 0) {
-                      return (
-                        <>
-                          Your password is incorrect. Try again.
-                          <br />
-                          <Button 
-                            variant="link" 
-                            className="px-0 w-fit h-auto text-sm text-blue-500 hover:text-blue-600"
-                            onClick={() => alert("Password reset functionality coming soon!")}
-                          >
-                            Reset your password
-                          </Button>
-                        </>
-                      );
-                    } else {
-                      return "No account found with this email. Please sign up.";
-                    }
-                  } catch (e) {
-                    return error;
-                  }
-                }
-              ) || error}
+              {error === "Firebase: Error (auth/invalid-credential)." ? (
+                <CheckEmailExists email={form.getValues().email} />
+              ) : (
+                error
+              )}
             </AlertDescription>
           </Alert>
         )}
