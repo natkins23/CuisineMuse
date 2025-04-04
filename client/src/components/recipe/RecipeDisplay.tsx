@@ -5,9 +5,10 @@ import { GeneratedRecipe } from '@/lib/recipeApi';
 
 interface RecipeDisplayProps {
   recipeData: Partial<GeneratedRecipe>;
+  compact?: boolean; // Add compact mode for inline display
 }
 
-const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipeData }) => {
+const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipeData, compact = false }) => {
   // Format lists from string with newlines to arrays
   const formatList = (content: string | undefined): string[] => {
     if (!content) return [];
@@ -17,22 +18,31 @@ const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipeData }) => {
   const ingredients = formatList(recipeData.ingredients);
   const instructions = formatList(recipeData.instructions);
 
+  // Use the compact prop value
+  const isCompact = compact;
+
   return (
-    <Card className="w-full shadow-md">
-      <CardContent className="p-6">
-        <h1 className="text-2xl font-bold text-green-700 mb-2">{recipeData.title}</h1>
+    <Card className={`w-full ${isCompact ? 'shadow-sm' : 'shadow-md'}`}>
+      <CardContent className={isCompact ? "p-3" : "p-6"}>
+        {!isCompact && (
+          <>
+            <h1 className="text-2xl font-bold text-green-700 mb-2">{recipeData.title}</h1>
+            
+            <div className="text-sm text-gray-500 mb-4">
+              {recipeData.prepTime && <span>Prep time: {recipeData.prepTime} minutes • </span>}
+              {recipeData.servings && <span>Servings: {recipeData.servings}</span>}
+            </div>
+            
+            <p className="text-gray-700 mb-6">{recipeData.description}</p>
+            
+            <Separator className="my-4" />
+          </>
+        )}
         
-        <div className="text-sm text-gray-500 mb-4">
-          {recipeData.prepTime && <span>Prep time: {recipeData.prepTime} minutes • </span>}
-          {recipeData.servings && <span>Servings: {recipeData.servings}</span>}
-        </div>
-        
-        <p className="text-gray-700 mb-6">{recipeData.description}</p>
-        
-        <Separator className="my-4" />
-        
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-orange-600 mb-3">Ingredients</h2>
+        <div className={isCompact ? "mb-3" : "mb-6"}>
+          <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold text-orange-600 ${isCompact ? 'mb-2' : 'mb-3'}`}>
+            Ingredients
+          </h2>
           <ul className="list-disc pl-5 space-y-1">
             {ingredients.map((ingredient, index) => (
               <li key={index} className="text-gray-700">{ingredient}</li>
@@ -40,10 +50,12 @@ const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipeData }) => {
           </ul>
         </div>
         
-        <Separator className="my-4" />
+        <Separator className={isCompact ? "my-2" : "my-4"} />
         
         <div>
-          <h2 className="text-xl font-semibold text-orange-600 mb-3">Instructions</h2>
+          <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold text-orange-600 ${isCompact ? 'mb-2' : 'mb-3'}`}>
+            Instructions
+          </h2>
           <ol className="list-decimal pl-5 space-y-2">
             {instructions.map((step, index) => (
               <li key={index} className="text-gray-700">{step}</li>

@@ -120,8 +120,35 @@ export default function DemoSection() {
       // Add AI response to chat
       setMessages([...newMessages, response.message]);
       
-      // Check for recipe suggestions in the response
-      if (response.suggestions && response.suggestions.length > 0) {
+      // Log the complete response for debugging
+      console.log("Complete API response:", response);
+      
+      // Check for recipe data in the response
+      if (response.recipe?.recipeData) {
+        console.log("Recipe data detected:", response.recipe.recipeData);
+        
+        // Store the recipe object in the message for proper display
+        const messageWithRecipe = {...response.message, recipe: response.recipe};
+        setMessages([...newMessages, messageWithRecipe]);
+        
+        // If we also have suggestions, store them
+        if (response.suggestions && response.suggestions.length > 0) {
+          setRecipeSuggestions(response.suggestions);
+        } else if (response.recipe.title) {
+          // Create a suggestion from the recipe data if no suggestions provided
+          setRecipeSuggestions([{
+            title: response.recipe.title,
+            cooking_time: response.recipe.time || "15 minutes",
+            image_url: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e",
+            description: response.recipe.recipeData.description || "A delicious recipe"
+          }]);
+        }
+        
+        // Hide the suggestions UI when displaying recipe results
+        setShowSuggestions(false);
+      } 
+      // Check for recipe suggestions without recipe data
+      else if (response.suggestions && response.suggestions.length > 0) {
         // Store the recipe suggestions
         setRecipeSuggestions(response.suggestions);
         // Hide the suggestions UI when displaying recipe results
@@ -257,6 +284,17 @@ export default function DemoSection() {
                             <p className="font-medium text-neutral-800">{message.recipe.title}</p>
                             <p className="text-sm text-neutral-600 mt-1">Ready in {message.recipe.time} • {message.recipe.servings}</p>
                           </div>
+                          
+                          {/* Show RecipeDisplay component inline if recipeData exists */}
+                          {message.recipe.recipeData && (
+                            <div className="mt-3 bg-white rounded-md border border-neutral-100">
+                              <RecipeDisplay 
+                                recipeData={message.recipe.recipeData} 
+                                compact={true} 
+                              />
+                            </div>
+                          )}
+                          
                           <button className="mt-3 flex items-center text-green-600 text-sm font-medium hover:text-green-800">
                             <FileDown className="h-4 w-4 mr-1" />
                             Save this recipe
