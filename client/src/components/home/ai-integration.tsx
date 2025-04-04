@@ -17,7 +17,7 @@ export default function AIIntegration() {
               Cutting-Edge Recipe Creation
             </p>
             <p className="mt-4 text-lg text-neutral-600">
-              CulinaryMuse harnesses the power of OpenAI's advanced language model to create personalized, detailed recipes based on your preferences, dietary restrictions, and available ingredients.
+              CulinaryMuse harnesses the power of Google's Gemini AI to create personalized, detailed recipes based on your preferences, dietary restrictions, and available ingredients.
             </p>
             <div className="mt-6">
               <ul className="space-y-4">
@@ -72,7 +72,7 @@ export default function AIIntegration() {
                 </div>
                 <div>
                   <p className="text-neutral-700 font-medium">Powered by</p>
-                  <p className="text-neutral-900 font-bold">OpenAI Technology</p>
+                  <p className="text-neutral-900 font-bold">Google Gemini</p>
                 </div>
               </div>
             </div>

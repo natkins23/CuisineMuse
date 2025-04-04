@@ -22,15 +22,12 @@ export interface GeneratedRecipe {
  */
 export async function generateRecipe(options: RecipeGenerationOptions): Promise<GeneratedRecipe> {
   try {
-    const response = await apiRequest("/api/generate-recipe", {
+    const response = await apiRequest<GeneratedRecipe>("/api/generate-recipe", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(options),
+      body: options,
     });
     
-    return response as GeneratedRecipe;
+    return response;
   } catch (error) {
     console.error("Error generating recipe:", error);
     throw new Error("Failed to generate recipe. Please try again.");

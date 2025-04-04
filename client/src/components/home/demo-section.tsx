@@ -203,7 +203,7 @@ export default function DemoSection() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-neutral-600 text-sm">Powered by OpenAI technology</p>
+            <p className="text-neutral-600 text-sm">Powered by Google Gemini AI</p>
           </div>
         </motion.div>
       </div>

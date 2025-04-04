@@ -2,10 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "placeholder-key");
+import { generateRecipe } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -89,54 +86,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate recipe using Google Gemini
   app.post("/api/generate-recipe", async (req: Request, res: Response) => {
     try {
-      const { prompt, mealType = "", mainIngredient = "", dietary = "" } = req.body;
+      const { prompt, mealType, mainIngredient, dietary } = req.body;
       
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
       
-      // Construct detailed prompt for Gemini
-      const detailedPrompt = `
-        Generate a recipe based on the following details:
-        User Request: ${prompt}
-        ${mealType ? `Meal Type: ${mealType}` : ''}
-        ${mainIngredient ? `Main Ingredient: ${mainIngredient}` : ''}
-        ${dietary ? `Dietary Restrictions: ${dietary}` : ''}
-        
-        Format the response as a JSON object with the following fields:
-        - title: The name of the recipe
-        - description: A brief description of the dish
-        - ingredients: A list of ingredients with quantities
-        - instructions: Step-by-step cooking instructions
-        - mealType: The type of meal (breakfast, lunch, dinner, dessert, snack)
-        - prepTime: Estimated preparation time in minutes
-        - servings: Number of servings the recipe makes
-      `;
-      
-      // Use Gemini Pro model
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      
-      // Configure the generation
-      const result = await model.generateContent({
-        contents: [
-          { role: "user", parts: [{ text: detailedPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
-        }
+      // Use our server-side generateRecipe function
+      const recipeData = await generateRecipe({
+        prompt,
+        mealType,
+        mainIngredient,
+        dietary
       });
-
-      // Get the response text
-      const responseText = result.response.text();
       
-      // Extract the JSON part from the response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No valid JSON found in the response");
-      }
-      
-      const recipeData = JSON.parse(jsonMatch[0]);
       res.json(recipeData);
     } catch (error: any) {
       console.error("Gemini API error:", error);
