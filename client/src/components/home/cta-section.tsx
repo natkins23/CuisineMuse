@@ -72,7 +72,7 @@ export default function CTASection() {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="px-5 py-3 rounded-l-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 w-full"
+                className="px-5 py-3 rounded-l-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 w-full mr-2"
                 {...register("email")}
               />
               <Button 
