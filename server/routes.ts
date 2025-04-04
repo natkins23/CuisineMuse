@@ -5,11 +5,15 @@ import { firestoreStorage } from "./firestore";
 import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
 import { generateRecipe, generateChatResponse } from "./gemini";
 import { verifyFirebaseToken } from "./firebase-admin";
+import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit";
 
 // Use Firestore storage instead of in-memory storage
 const db = firestoreStorage;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Apply default rate limiting to all API routes
+  app.use("/api", defaultLimiter);
+  
   // prefix all routes with /api
   
   // Get all recipes
@@ -93,8 +97,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Generate recipe using Google Gemini
-  app.post("/api/generate-recipe", async (req: Request, res: Response) => {
+  // Generate recipe using Google Gemini - with stricter rate limiting
+  app.post("/api/generate-recipe", aiLimiter, async (req: Request, res: Response) => {
     try {
       const { prompt, mealType, mainIngredient, dietary } = req.body;
       
@@ -120,8 +124,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Chat conversation with recipe assistant
-  app.post("/api/chat", async (req: Request, res: Response) => {
+  // Chat conversation with recipe assistant - with stricter rate limiting
+  app.post("/api/chat", aiLimiter, async (req: Request, res: Response) => {
     try {
       const { messages, mealType, mainIngredient, dietary } = req.body;
       

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SuggestionChip from "@/components/ui/suggestion-chip";
+import RateLimitNotification from "@/components/ui/rate-limit-notification";
 import { Zap, User, FileDown, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatMessage, sendChatMessage } from "@/lib/recipeApi";
@@ -24,6 +25,8 @@ export default function DemoSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMealType, setCurrentMealType] = useState<string | undefined>();
   const [currentIngredient, setCurrentIngredient] = useState<string | undefined>();
+  const [showRateLimitNotification, setShowRateLimitNotification] = useState(false);
+  const [rateLimitMessage, setRateLimitMessage] = useState<string>();
   
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -76,13 +79,23 @@ export default function DemoSection() {
       
       // Add AI response to chat
       setMessages([...newMessages, response.message]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to get a response. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check if this is a rate limit error (status code 429)
+      if (error.response?.status === 429 || 
+          (typeof error === 'object' && error.message?.includes('rate limit'))) {
+        // Show the rate limit notification
+        setRateLimitMessage("You've reached the rate limit for AI requests. Please try again in a few minutes.");
+        setShowRateLimitNotification(true);
+      } else {
+        // Show general error toast for other errors
+        toast({
+          title: "Error",
+          description: "Failed to get a response. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -97,9 +110,20 @@ export default function DemoSection() {
       handleSend();
     }
   };
+  
+  const handleCloseRateLimitNotification = () => {
+    setShowRateLimitNotification(false);
+  };
 
   return (
     <section id="how-it-works" className="py-16 bg-green-50">
+      {/* Rate limit notification */}
+      {showRateLimitNotification && (
+        <RateLimitNotification 
+          message={rateLimitMessage}
+          onClose={handleCloseRateLimitNotification}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-base text-orange-600 font-semibold tracking-wide uppercase">How It Works</h2>

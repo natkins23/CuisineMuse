@@ -28,8 +28,19 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
     });
     
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating recipe:", error);
+    
+    // Check if this is a rate limit error
+    if (error.status === 429 || 
+        (error.response && error.response.status === 429) ||
+        (typeof error.message === 'string' && error.message.toLowerCase().includes('rate limit'))) {
+      // Specifically throw a rate limit error that can be caught and handled
+      const rateLimitError = new Error("You've reached the rate limit for AI requests. Please try again in a few minutes.");
+      rateLimitError.name = "RateLimitError";
+      throw rateLimitError;
+    }
+    
     throw new Error("Failed to generate recipe. Please try again.");
   }
 }
@@ -72,8 +83,19 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
     });
     
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending chat message:", error);
+    
+    // Check if this is a rate limit error
+    if (error.status === 429 || 
+        (error.response && error.response.status === 429) ||
+        (typeof error.message === 'string' && error.message.toLowerCase().includes('rate limit'))) {
+      // Specifically throw a rate limit error that can be caught and handled
+      const rateLimitError = new Error("You've reached the rate limit for AI requests. Please try again in a few minutes.");
+      rateLimitError.name = "RateLimitError";
+      throw rateLimitError;
+    }
+    
     throw new Error("Failed to get response from assistant. Please try again.");
   }
 }
