@@ -115,21 +115,30 @@ DO NOT include any JSON code blocks syntax like \`\`\`json or \`\`\` in your res
     const responseText = result.response.text();
     console.log("Full response from Gemini:", responseText);
     
-    // First get the conversation text - everything before the first '{' character
-    const jsonStartIndex = responseText.indexOf('{');
-    let conversationText = responseText;
+    // Clean up the response to handle code blocks with JSON
+    let processedText = responseText;
+    
+    // Remove any markdown code block indicators (```json, ```, etc.)
+    processedText = processedText.replace(/```json|```/g, '');
+    
+    // Find where the JSON likely begins (first { character that's not inside another structure)
+    const jsonStartIndex = processedText.indexOf('{');
+    let conversationText = processedText;
     let jsonText = '';
     
     if (jsonStartIndex !== -1) {
       // Split the text into conversation and JSON parts
-      conversationText = responseText.substring(0, jsonStartIndex).trim();
-      jsonText = responseText.substring(jsonStartIndex);
+      conversationText = processedText.substring(0, jsonStartIndex).trim();
+      jsonText = processedText.substring(jsonStartIndex);
       
       // Clean up any trailing text after JSON if present
       const lastBraceIndex = jsonText.lastIndexOf('}');
       if (lastBraceIndex !== -1) {
         jsonText = jsonText.substring(0, lastBraceIndex + 1);
       }
+      
+      // Clean up the conversation text as well (remove any mention of "json" at the end)
+      conversationText = conversationText.replace(/\s*json\s*$/i, '');
     }
     
     // Parse the JSON part

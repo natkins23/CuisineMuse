@@ -304,18 +304,12 @@ export default function DemoSection() {
                           
                           {/* Show RecipeDisplay component inline if recipeData exists */}
                           {message.recipe.recipeData && (
-                            <>
-                              {/* This is a workaround to understand why RecipeDisplay might not be showing */}
-                              <div className="bg-red-50 text-xs p-2 my-2 rounded overflow-auto max-h-40">
-                                <pre>Debug: {JSON.stringify(message.recipe.recipeData, null, 2)}</pre>
-                              </div>
-                              <div className="mt-3 bg-white rounded-md border border-neutral-100">
-                                <RecipeDisplay 
-                                  recipeData={message.recipe.recipeData} 
-                                  compact={true} 
-                                />
-                              </div>
-                            </>
+                            <div className="mt-3 bg-white rounded-md border border-neutral-100">
+                              <RecipeDisplay 
+                                recipeData={message.recipe.recipeData} 
+                                compact={true} 
+                              />
+                            </div>
                           )}
                           
                           <button className="mt-3 flex items-center text-green-600 text-sm font-medium hover:text-green-800">

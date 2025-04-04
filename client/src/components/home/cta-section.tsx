@@ -27,7 +27,12 @@ export default function CTASection() {
   
   const subscription = useMutation({
     mutationFn: async (data: NewsletterFormData) => {
-      return apiRequest("POST", "/api/newsletter", data);
+      // The type issue is because RequestInit expects BodyInit (string, FormData, etc)
+      // but apiRequest function handles the conversion internally
+      return apiRequest<any>("/api/newsletter", {
+        method: "POST",
+        body: data as any // Type cast to avoid TS error
+      });
     },
     onSuccess: () => {
       toast({
@@ -39,6 +44,7 @@ export default function CTASection() {
       setIsSubmitting(false);
     },
     onError: (error) => {
+      console.error("Newsletter subscription error:", error);
       toast({
         title: "Failed to subscribe",
         description: "Please try again later.",

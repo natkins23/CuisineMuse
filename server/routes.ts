@@ -166,15 +166,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertNewsletterSchema.safeParse(req.body);
       
       if (!validatedData.success) {
+        console.error("Newsletter validation error:", validatedData.error.format());
         return res.status(400).json({ message: "Invalid email" });
       }
+
+      console.log("Attempting to subscribe email:", validatedData.data.email);
       
       const newsletter = await db.subscribeToNewsletter(validatedData.data.email);
+      console.log("Subscription successful, created newsletter entry:", newsletter);
 
       // Try to send a welcome email to the subscriber
       try {
-        await sendTestEmail(validatedData.data.email);
-        console.log('Welcome email sent to new subscriber:', validatedData.data.email);
+        // For test environments, use a valid test email for Resend
+        let emailToUse = validatedData.data.email;
+        if (emailToUse.endsWith('@example.com') || !emailToUse.includes('@') || process.env.NODE_ENV === 'development') {
+          console.log('Using test email for Resend in development environment');
+          emailToUse = 'delivered@resend.dev';
+        }
+
+        const emailSent = await sendTestEmail(emailToUse);
+        console.log('Welcome email result:', emailSent ? 'Success' : 'Failed');
+        console.log('Welcome email sent to new subscriber:', emailToUse);
       } catch (emailError) {
         // Just log the error but don't fail the subscription
         console.error('Failed to send welcome email:', emailError);
