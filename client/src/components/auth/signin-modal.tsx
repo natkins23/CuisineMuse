@@ -155,36 +155,30 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         return;
       }
 
-      const { email, password } = form.getValues();
+      const { email: rawEmail, password } = form.getValues();
+      const email = rawEmail.toLowerCase().trim();
       
-      // Check authentication methods for email
-      console.log("Checking auth methods for email:", email, "with auth instance:", {
-        initialized: !!auth,
-        currentUser: auth.currentUser,
-        projectId: auth.app.options.projectId
-      });
-      
-      // Wait for auth to be ready
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log("Auth methods check:", {
-        email,
-        methods,
-        isInitialized: !!auth,
-        currentUser: auth.currentUser?.email,
-        timestamp: new Date().toISOString()
-      });
+      try {
+        // Ensure auth is initialized
+        if (!auth.app) {
+          throw new Error("Firebase Auth not initialized");
+        }
 
-      // Double check auth state
-      const user = auth.currentUser;
-      if (user) {
-        console.log("Current auth state:", {
-          email: user.email,
-          providerData: user.providerData,
-          emailVerified: user.emailVerified
+        // Wait for auth initialization
+        await new Promise<void>((resolve) => {
+          const unsubscribe = onAuthStateChanged(auth, () => {
+            unsubscribe();
+            resolve();
+          });
         });
-      }
+
+        console.log("Checking auth methods for email:", email, "with auth config:", {
+          projectId: auth.app.options.projectId,
+          apiKey: auth.app.options.apiKey ? "present" : "missing"
+        });
+        
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        console.log("Auth methods found for", email, ":", methods);
 
       if (!isSignUp) {
         // Sign In flow
@@ -233,7 +227,9 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     } catch (error: any) {
       console.error("Error during email auth:", error);
       
-      if (error.code === 'auth/wrong-password') {
+      if (error.message?.includes("Firebase Auth not initialized")) {
+        setError("Authentication service not ready. Please try again.");
+      } else if (error.code === 'auth/wrong-password') {
         setError("Incorrect password. Please try again.");
       } else if (error.code === 'auth/too-many-requests') {
         setError("Too many attempts. Please try again later.");
