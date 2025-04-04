@@ -1,5 +1,5 @@
 import { Recipe } from "@shared/schema";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export default function RecipeModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       {/* Hide default Radix close button */}
       <DialogContent className="max-w-[95vw] sm:max-w-[80vw] h-[90vh] flex flex-col px-4 sm:px-8 py-4 [&>button]:hidden">
+        <DialogTitle className="sr-only">{recipe.title}</DialogTitle>
         <div className="overflow-y-auto flex-1">
           {/* Title and buttons aligned with content */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 px-2 sm:px-4">
