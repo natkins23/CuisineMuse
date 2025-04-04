@@ -147,6 +147,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mainIngredient,
         dietary
       });
+
+  // Debug endpoint to check auth methods
+  app.get("/api/debug/auth-methods", async (req: Request, res: Response) => {
+    try {
+      const email = req.query.email as string;
+      if (!email) {
+        return res.status(400).json({ error: "Email parameter required" });
+      }
+
+      // Fetch user by email using Admin SDK
+      const userRecord = await admin.auth().getUserByEmail(email);
+      
+      // Get sign-in methods
+      const providerData = userRecord.providerData.map(provider => provider.providerId);
+      
+      res.json({
+        email,
+        uid: userRecord.uid,
+        providers: providerData,
+        emailVerified: userRecord.emailVerified,
+        disabled: userRecord.disabled,
+        metadata: userRecord.metadata
+      });
+      
+    } catch (error: any) {
+      console.error("Error fetching auth methods:", error);
+      res.status(500).json({ 
+        error: error.message,
+        code: error.code 
+      });
+    }
+  });
+
       
       // Log the complete response for debugging
       console.log("Chat API Response:", JSON.stringify(chatResponse, null, 2));

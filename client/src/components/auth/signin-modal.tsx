@@ -176,8 +176,21 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         apiKey: auth.app.options.apiKey ? "present" : "missing"
       });
 
-      const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log("Auth methods found for", email, ":", methods);
+      // Check both client and server side
+      const [clientMethods, serverResponse] = await Promise.all([
+        fetchSignInMethodsForEmail(auth, email),
+        fetch(`/api/debug/auth-methods?email=${encodeURIComponent(email)}`).then(r => r.json()).catch(() => null)
+      ]);
+
+      console.log("Auth validation:", {
+        email,
+        clientMethods,
+        serverProviders: serverResponse?.providers,
+        serverMetadata: serverResponse?.metadata
+      });
+
+      // Use server response as source of truth if available
+      const methods = serverResponse?.providers || clientMethods;
 
       if (!isSignUp) {
         // Sign In flow
