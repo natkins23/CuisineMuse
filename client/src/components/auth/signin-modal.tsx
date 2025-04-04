@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
@@ -16,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect } from "react";
 
-function CheckEmailExists({ email }: { email: string }) {
+function CheckEmailExists({ email, onGoogleSignIn }: { email: string; onGoogleSignIn?: () => void }) {
   const [exists, setExists] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -32,7 +31,7 @@ function CheckEmailExists({ email }: { email: string }) {
   }, [email]);
 
   if (exists === null) return <>Authentication error. Please try again.</>;
-  
+
   return exists ? (
     <>
       Your password is incorrect. Try again.
@@ -69,7 +68,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
     defaultValues: {
@@ -83,7 +82,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       setError(null);
       setIsSigningIn(true);
       const userCredential = await signInWithGoogle();
-      
+
       if (userCredential?.user?.email && userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime) {
         try {
           const displayName = userCredential.user.displayName || 'there';
@@ -101,7 +100,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           console.error("Failed to send welcome email:", emailError);
         }
       }
-      
+
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error during sign in:", error);
@@ -119,7 +118,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
         'auth/popup-closed-by-user': 'Sign in was cancelled.',
         'auth/unauthorized-domain': 'This domain is not authorized for sign in.',
       }[error.code] || 'An error occurred. Please try again.';
-      
+
       setError(errorMessage);
       }
     } finally {
@@ -134,13 +133,13 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       if (!isValid) {
         return;
       }
-      
+
       const { email, password } = form.getValues();
-      
+
       setIsSigningIn(true);
       const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
       const userCredential = await authFunction(email, password);
-      
+
       if (isSignUp && userCredential?.user?.email) {
         try {
           await fetch('/api/email/test', {
@@ -157,7 +156,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           console.error("Failed to send welcome email:", emailError);
         }
       }
-      
+
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error during email auth:", error);
@@ -183,7 +182,10 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <AlertTitle>Authentication Error</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               {error === "Firebase: Error (auth/invalid-credential)." ? (
-                <CheckEmailExists email={form.getValues().email} />
+                <CheckEmailExists 
+                  email={form.getValues().email} 
+                  onGoogleSignIn={handleGoogleSignIn}
+                />
               ) : (
                 error
               )}
