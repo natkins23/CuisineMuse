@@ -30,57 +30,66 @@ export default function ChatInterface() {
       content: "Bonjour! I am Chef Pierre, your personal CulinaryMuse assistant. What delightful recipe would you like me to 'elp you create today? Magnifique!"
     }
   ]);
-  
+
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingRecipe, setIsSavingRecipe] = useState(false);
   const [isEmailingRecipe, setIsEmailingRecipe] = useState(false);
-  
+
   // Track selected options from each category
   const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
   const [selectedProteins, setSelectedProteins] = useState<string[]>([]);
   const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
   const [selectedTimeOptions, setSelectedTimeOptions] = useState<string[]>([]);
-  
+
   // Rate limit notification state
   const [showRateLimitNotification, setShowRateLimitNotification] = useState(false);
-  const [rateLimitMessage, setRateLimitMessage] = useState<string>();
-  
+  const [rateLimitMessage, setRateLimitMessage] = useState("");
+  const [generationCount, setGenerationCount] = useState(0);
+
+  useEffect(() => {
+    // Fetch initial generation count
+    fetch('/api/generations')
+      .then(res => res.json())
+      .then(data => setGenerationCount(data.count))
+      .catch(console.error);
+  }, []);
+
   // Control visibility of suggestion sections
   const [showSuggestions, setShowSuggestions] = useState(true);
-  
+
   // Chat container ref for scrolling
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Auto-scroll chat to bottom when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-  
+
   // Check if a protein is compatible with the selected dietary options
   const isProteinDisabled = (protein: string) => {
     // Check for vegan restrictions
     const isVeganSelected = selectedDietaryOptions.includes("Vegan");
     const isNonVegan = nonVeganProteins.includes(protein);
-    
+
     // Check for vegetarian restrictions
     const isVegetarianSelected = selectedDietaryOptions.includes("Vegetarian");
     const isNonVegetarian = nonVegetarianProteins.includes(protein);
-    
+
     return (
       (isVeganSelected && isNonVegan) || // Disable non-vegan options when vegan is selected
       (isVegetarianSelected && isNonVegetarian) // Disable non-vegetarian options when vegetarian is selected
     );
   };
-  
+
   const handleSend = async () => {
     if (isLoading) return;
-    
+
     // Prepare input text with selected options if input field is empty
     const userInput = inputValue.trim() || createUserInputFromSelections();
-    
+
     if (!userInput) {
       toast({
         title: "No input",
@@ -89,7 +98,7 @@ export default function ChatInterface() {
       });
       return;
     }
-    
+
     // Add user message
     const userMessage: ChatMessage = { 
       role: "user", 
@@ -99,7 +108,7 @@ export default function ChatInterface() {
     setMessages(newMessages);
     setInputValue("");
     setIsLoading(true);
-    
+
     try {
       // Send to API with all selected options
       const response = await sendChatMessage({
@@ -109,15 +118,16 @@ export default function ChatInterface() {
         dietary: selectedDietaryOptions.length > 0 ? 
           selectedDietaryOptions.map(d => d.toLowerCase()).join(", ") : undefined
       });
-      
+
       // Add AI response to chat
       setMessages([...newMessages, response.message]);
-      
+      setGenerationCount(prev => prev + 1); // Update generation count after successful generation
+
       // Hide the suggestions after getting a response
       setShowSuggestions(false);
     } catch (error: any) {
       console.error("Chat error:", error);
-      
+
       // Check if this is a rate limit error (status code 429)
       if (error.response?.status === 429 || 
           (typeof error === 'object' && error.message?.includes('rate limit'))) {
@@ -136,30 +146,30 @@ export default function ChatInterface() {
       setIsLoading(false);
     }
   };
-  
+
   // Create a text input from the selected options
   const createUserInputFromSelections = () => {
     const parts: string[] = [];
-    
+
     if (selectedMealTypes.length > 0) {
       parts.push(`I'm looking for a ${selectedMealTypes.join(" or ")} recipe`);
     }
-    
+
     if (selectedDietaryOptions.length > 0) {
       parts.push(`that is ${selectedDietaryOptions.join(" and ")}`);
     }
-    
+
     if (selectedProteins.length > 0) {
       parts.push(`with ${selectedProteins.join(" and ")}`);
     }
-    
+
     if (selectedTimeOptions.length > 0) {
       parts.push(`that is ${selectedTimeOptions.join(" and ")}`);
     }
-    
+
     return parts.join(" ");
   };
-  
+
   const toggleChipSelection = (chipText: string, category: 'mealType' | 'protein' | 'dietary' | 'time') => {
     // Don't modify input field, just update selected state
     switch (category) {
@@ -180,7 +190,7 @@ export default function ChatInterface() {
       case 'dietary': {
         const isVeganSelected = chipText === "Vegan" && !selectedDietaryOptions.includes("Vegan");
         const isVegetarianSelected = chipText === "Vegetarian" && !selectedDietaryOptions.includes("Vegetarian");
-        
+
         setSelectedDietaryOptions(prev => {
           if (prev.includes(chipText)) {
             return prev.filter(item => item !== chipText);
@@ -188,12 +198,12 @@ export default function ChatInterface() {
             return [...prev, chipText];
           }
         });
-        
+
         // If vegan is selected, clear incompatible proteins
         if (isVeganSelected) {
           setSelectedProteins(prev => prev.filter(protein => !nonVeganProteins.includes(protein)));
         }
-        
+
         // If vegetarian is selected, clear incompatible proteins
         if (isVegetarianSelected) {
           setSelectedProteins(prev => prev.filter(protein => !nonVegetarianProteins.includes(protein)));
@@ -209,17 +219,17 @@ export default function ChatInterface() {
         break;
     }
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSend();
     }
   };
-  
+
   const handleCloseRateLimitNotification = () => {
     setShowRateLimitNotification(false);
   };
-  
+
   const handleResetChat = () => {
     setMessages([{
       role: "assistant",
@@ -230,14 +240,15 @@ export default function ChatInterface() {
     setSelectedDietaryOptions([]);
     setSelectedTimeOptions([]);
     setShowSuggestions(true);
+    setGenerationCount(0); //Reset generation count on new conversation
   };
-  
+
   const handleSaveRecipe = async (recipe: any) => {
     if (!currentUser || !recipe) return;
-    
+
     try {
       setIsSavingRecipe(true);
-      
+
       const recipeData = {
         title: recipe.title,
         description: recipe.description || "",
@@ -247,15 +258,15 @@ export default function ChatInterface() {
         prepTime: recipe.prepTime || 0,
         servings: recipe.servings || 0,
       };
-      
+
       await apiRequest('/api/recipes', {
         method: 'POST',
         body: JSON.stringify(recipeData),
       });
-      
+
       // Invalidate the recipes query to refresh the sidebar
       queryClient.invalidateQueries({ queryKey: ['/api/recipes'] });
-      
+
       toast({
         title: "Recipe Saved!",
         description: "The recipe has been added to your collection.",
@@ -271,13 +282,13 @@ export default function ChatInterface() {
       setIsSavingRecipe(false);
     }
   };
-  
+
   const handleEmailRecipe = async (recipe: any) => {
     if (!currentUser?.email || !recipe) return;
-    
+
     try {
       setIsEmailingRecipe(true);
-      
+
       const emailRequest: EmailRecipeRequest = {
         recipientEmail: currentUser.email,
         recipe: {
@@ -290,9 +301,9 @@ export default function ChatInterface() {
           servings: recipe.servings || 0,
         }
       };
-      
+
       await sendRecipeByEmail(emailRequest);
-      
+
       toast({
         title: "Recipe Emailed!",
         description: `The recipe was sent to ${currentUser.email}`,
@@ -318,7 +329,7 @@ export default function ChatInterface() {
           onClose={handleCloseRateLimitNotification}
         />
       )}
-      
+
       {/* Chat Interface Header */}
       <div className="bg-green-600 text-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center">
@@ -328,7 +339,7 @@ export default function ChatInterface() {
         <div className="flex items-center gap-4">
           {currentUser && (
             <div className="text-sm bg-green-700 px-2 py-1 rounded">
-              {messages.filter(m => m.recipe).length}/10 generations
+              {generationCount}/10 generations
             </div>
           )}
           <Button 
@@ -393,7 +404,7 @@ export default function ChatInterface() {
                         )}
                         Save recipe
                       </Button>
-                      
+
                       <Button 
                         size="sm" 
                         variant="outline" 
@@ -432,7 +443,7 @@ export default function ChatInterface() {
               <div className="flex flex-wrap gap-2">
                 {mealTypes.map((mealType, index) => {
                   const isSelected = selectedMealTypes.includes(mealType);
-                  
+
                   return (
                     <motion.div
                       key={index}
@@ -452,14 +463,14 @@ export default function ChatInterface() {
                 })}
               </div>
             </div>
-            
+
             {/* Dietary suggestions - Always visible */}
             <div>
               <h4 className="text-sm font-medium text-neutral-500 mb-2">Dietary preferences</h4>
               <div className="flex flex-wrap gap-2">
                 {dietarySuggestions.map((dietary, index) => {
                   const isSelected = selectedDietaryOptions.includes(dietary);
-                  
+
                   return (
                     <motion.div
                       key={index}
@@ -479,7 +490,7 @@ export default function ChatInterface() {
                 })}
               </div>
             </div>
-            
+
             {/* Protein suggestions - Always visible */}
             <div>
               <h4 className="text-sm font-medium text-neutral-500 mb-2">Main protein</h4>
@@ -487,7 +498,7 @@ export default function ChatInterface() {
                 {proteinSuggestions.map((protein, index) => {
                   const isSelected = selectedProteins.includes(protein);
                   const isDisabled = isProteinDisabled(protein);
-                  
+
                   return (
                     <motion.div
                       key={index}
@@ -509,14 +520,14 @@ export default function ChatInterface() {
                 })}
               </div>
             </div>
-            
+
             {/* Time suggestions - Always visible */}
             <div>
               <h4 className="text-sm font-medium text-neutral-500 mb-2">Cooking time</h4>
               <div className="flex flex-wrap gap-2">
                 {timeSuggestions.map((time, index) => {
                   const isSelected = selectedTimeOptions.includes(time);
-                  
+
                   return (
                     <motion.div
                       key={index}
