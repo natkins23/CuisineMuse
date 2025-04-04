@@ -63,6 +63,13 @@ export interface ChatRequest {
   dietary?: string;
 }
 
+export interface RecipeSuggestion {
+  title: string;
+  cooking_time: string;
+  image_url: string;
+  description: string;
+}
+
 export interface ChatResponse {
   message: ChatMessage;
   recipe?: {
@@ -70,6 +77,7 @@ export interface ChatResponse {
     time: string;
     servings: string;
   };
+  suggestions?: RecipeSuggestion[];
 }
 
 /**

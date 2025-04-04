@@ -22,6 +22,13 @@ export interface ChatRequest {
   dietary?: string;
 }
 
+export interface RecipeSuggestion {
+  title: string;
+  cooking_time: string;
+  image_url: string;
+  description: string;
+}
+
 export interface ChatResponse {
   message: ChatMessage;
   recipe?: {
@@ -30,7 +37,7 @@ export interface ChatResponse {
     servings: string; // Formatted servings (e.g., "4 servings")
     recipeData?: Partial<GeneratedRecipe>; // Full recipe data if available
   };
-  reactComponent?: string; // The React component code as a string
+  suggestions?: RecipeSuggestion[]; // Array of recipe suggestions
 }
 
 /**
@@ -79,18 +86,23 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     const result = await chatModel.generateContent({
       contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease include 3 recipe suggestions in your response, each with:
 - A title
-- Cooking time
+- Cooking time (in minutes)
 - A relevant image URL from Unsplash
 - A brief description
 
-I want you to return a reusable React component called RecipeCard that displays this information.
-The component should:
-- Accept an array of recipe objects as props
-- Display each recipe with its title, image, cooking time, and description
-- Use clean, modern styling with CSS
-- Be fully functional and ready to use in a React project
+Format your response as a JSON object with a 'suggestions' array containing these recipes. Each recipe should have the following structure:
+{
+  "suggestions": [
+    {
+      "title": "Recipe Title",
+      "cooking_time": "15 minutes",
+      "image_url": "https://unsplash.com/image-link",
+      "description": "Brief description of the dish"
+    }
+  ]
+}
 
-Return only valid React JSX code without any explanations. The component should be self-contained and directly usable.`}] }],
+Return only valid JSON without any explanations or additional text.`}] }],
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1500,
@@ -99,17 +111,16 @@ Return only valid React JSX code without any explanations. The component should 
     
     const responseText = result.response.text();
     
-    // Extract the React component code from the response
-    const componentMatch = responseText.match(/```(?:jsx|tsx)?\s*(import[\s\S]*?;|const[\s\S]*?=>[\s\S]*?;|function[\s\S]*?\})\s*```/);
-    let reactComponent = null;
+    // Extract suggestions from the response
+    const suggestionsMatch = responseText.match(/\{[\s\S]*"suggestions":\s*\[[\s\S]*\][\s\S]*\}/);
+    let suggestions = [];
     
-    if (componentMatch && componentMatch[1]) {
-      reactComponent = componentMatch[1].trim();
-    } else {
-      // Try alternate pattern without code block markers
-      const altMatch = responseText.match(/(import[\s\S]*?;|const[\s\S]*?=>[\s\S]*?;|function[\s\S]*?\})/);
-      if (altMatch && altMatch[1]) {
-        reactComponent = altMatch[1].trim();
+    if (suggestionsMatch) {
+      try {
+        const parsedResponse = JSON.parse(suggestionsMatch[0]);
+        suggestions = parsedResponse.suggestions;
+      } catch (e) {
+        console.error("Failed to parse suggestions:", e);
       }
     }
     
@@ -119,13 +130,18 @@ Return only valid React JSX code without any explanations. The component should 
       responseText.toLowerCase().includes("instructions:") ||
       (responseText.toLowerCase().includes("minutes") && responseText.toLowerCase().includes("servings"));
     
-    // Create response object
+    // Create response object with suggestions
     const response: ChatResponse = {
       message: {
         role: "assistant",
         content: responseText
       }
     };
+    
+    // Add the suggestions to the response if available
+    if (suggestions && suggestions.length > 0) {
+      response.suggestions = suggestions;
+    }
     
     // If it seems like a recipe, add a simplified recipe object
     if (hasRecipe) {
