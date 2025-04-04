@@ -1,4 +1,3 @@
-
 import { Recipe } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
@@ -22,16 +21,30 @@ export default function RecipeModal({ recipe, isOpen, onClose, onDelete }: Recip
           <DialogHeader className="relative px-0 mb-4">
             <div className="flex justify-between items-start">
               <DialogTitle className="text-2xl font-bold text-green-700">{recipe.title}</DialogTitle>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              {onDelete ? (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => {
+                    onDelete(recipe.id);
+                    onClose();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={onClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </DialogHeader>
-          
+
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
               <Badge variant="outline" className="px-2 py-1 text-xs bg-orange-50 text-orange-700">
@@ -50,11 +63,11 @@ export default function RecipeModal({ recipe, isOpen, onClose, onDelete }: Recip
                 <span>Difficulty: Medium</span>
               </div>
             </div>
-            
+
             <div className="bg-orange-50 rounded-lg p-4 mb-6">
               <p className="text-base text-gray-700">{recipe.description}</p>
             </div>
-            
+
             <div className="space-y-6">
               <div className="bg-white rounded-lg p-4 shadow-lg">
                 <div className="flex items-center gap-2 mb-3">
@@ -70,7 +83,7 @@ export default function RecipeModal({ recipe, isOpen, onClose, onDelete }: Recip
                   ))}
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-lg">
                 <div className="flex items-center gap-2 mb-3">
                   <ChefHat className="h-5 w-5 text-orange-600" />
