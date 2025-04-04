@@ -16,7 +16,6 @@ export default function LoginButton({ className }: LoginButtonProps) {
         onClick={() => setIsModalOpen(true)}
         className={className || "bg-orange-500 hover:bg-orange-600 transition-colors"}
       >
-        <LogIn className="h-4 w-4 mr-2" />
         Get Started
       </Button>
       

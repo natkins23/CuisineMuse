@@ -64,16 +64,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
         <Badge variant="outline" className="bg-orange-50 text-orange-700 hover:bg-orange-100">
           View Recipe
         </Badge>
-        {currentUser && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            <BookmarkPlus className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={currentUser ? handleSave : () => setIsModalOpen(true)}
+          disabled={isSaving}
+        >
+          <BookmarkPlus className="h-4 w-4" />
+        </Button>
       </CardFooter>
     </Card>
   );
