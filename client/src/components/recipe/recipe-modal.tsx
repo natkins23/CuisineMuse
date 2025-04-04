@@ -70,12 +70,7 @@ export default function RecipeModal({
               </Button>
               
               {/* Remix confirmation */}
-              <AlertDialog
-                open={showRemixAlert}
-                onOpenChange={(open) => {
-                  if (!open) setShowRemixAlert(false);
-                }}
-              >
+              <AlertDialog open={showRemixAlert} onOpenChange={setShowRemixAlert}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Feature Coming Soon</AlertDialogTitle>
