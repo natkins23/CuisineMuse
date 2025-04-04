@@ -2,6 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import RecipeCard from "@/components/ui/recipe-card";
 import { ArrowRight } from "lucide-react";
+
+// Example usage:
+const sampleRecipe = {
+  title: "Coq au Vin",
+  imageUrl: "https://images.unsplash.com/photo-1600891964092-4316c288032e",
+  cookingTime: 90,
+  cuisine: "French"
+};
+
+<RecipeCard {...sampleRecipe} />
+
 import { motion } from "framer-motion";
 import type { Recipe } from "@shared/schema";
 
