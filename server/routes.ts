@@ -6,6 +6,8 @@ import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
 import { generateRecipe, generateChatResponse } from "./gemini";
 import { verifyFirebaseToken } from "./firebase-admin";
 import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit";
+import { sendRecipeEmail, sendTestEmail } from "./email";
+import { z } from "zod";
 
 // Use Firestore storage instead of in-memory storage
 const db = firestoreStorage;
@@ -172,6 +174,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
       res.status(500).json({ message: "Failed to subscribe to newsletter" });
+    }
+  });
+
+  // Send recipe via email
+  const emailRecipeSchema = z.object({
+    recipientEmail: z.string().email(),
+    recipe: z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      ingredients: z.string().optional(),
+      instructions: z.string().optional(),
+      mealType: z.string().optional(),
+      prepTime: z.number().optional(),
+      servings: z.number().optional()
+    })
+  });
+
+  app.post("/api/email/recipe", async (req: Request, res: Response) => {
+    try {
+      const validatedData = emailRecipeSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ 
+          message: "Invalid email data", 
+          errors: validatedData.error.format() 
+        });
+      }
+      
+      const success = await sendRecipeEmail(validatedData.data);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to send email" });
+      }
+      
+      res.json({ message: "Email sent successfully" });
+    } catch (error) {
+      console.error("Error sending recipe email:", error);
+      res.status(500).json({ message: "Failed to send email" });
+    }
+  });
+
+  // Send test email
+  const testEmailSchema = z.object({
+    email: z.string().email()
+  });
+
+  app.post("/api/email/test", async (req: Request, res: Response) => {
+    try {
+      const validatedData = testEmailSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ 
+          message: "Invalid email", 
+          errors: validatedData.error.format() 
+        });
+      }
+      
+      const success = await sendTestEmail(validatedData.data.email);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to send test email" });
+      }
+      
+      res.json({ message: "Test email sent successfully" });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Failed to send test email" });
     }
   });
 

@@ -109,3 +109,45 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
     throw new Error("Failed to get response from assistant. Please try again.");
   }
 }
+
+/**
+ * Interface for email recipe request
+ */
+export interface EmailRecipeRequest {
+  recipientEmail: string;
+  recipe: Partial<GeneratedRecipe>;
+}
+
+/**
+ * Send a recipe via email
+ */
+export async function sendRecipeByEmail(request: EmailRecipeRequest): Promise<{ message: string }> {
+  try {
+    const response = await apiRequest<{ message: string }>("/api/email/recipe", {
+      method: "POST",
+      body: request as any,
+    });
+    
+    return response;
+  } catch (error: any) {
+    console.error("Error sending recipe email:", error);
+    throw new Error("Failed to send recipe email. Please try again.");
+  }
+}
+
+/**
+ * Send a test email to verify email functionality
+ */
+export async function sendTestEmail(email: string): Promise<{ message: string }> {
+  try {
+    const response = await apiRequest<{ message: string }>("/api/email/test", {
+      method: "POST",
+      body: { email } as any,
+    });
+    
+    return response;
+  } catch (error: any) {
+    console.error("Error sending test email:", error);
+    throw new Error("Failed to send test email. Please try again.");
+  }
+}
