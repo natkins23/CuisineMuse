@@ -27,10 +27,6 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link 
               href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                
-              }}
               className="flex-shrink-0 flex items-center cursor-pointer"
             >
               <span className="text-green-600 mr-2">
