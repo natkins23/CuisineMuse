@@ -6,8 +6,8 @@ if (!process.env.GEMINI_API_KEY) {
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Create a model for chat conversations - using gemini-1.5-flash model which is available in API v1
-const chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Create a model for chat conversations - using gemini-2.0-flash which is the latest model
+const chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Interface for chat messages
 export interface ChatMessage {
@@ -176,8 +176,8 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
       "servings": number of servings (number only)
     }`;
 
-    // Generate content using Gemini model that's available in API v1
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Generate content using the latest Gemini 2.0 model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
