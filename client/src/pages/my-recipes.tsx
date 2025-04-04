@@ -74,6 +74,7 @@ export default function MyRecipes() {
             >
               {sidebarOpen ? "Hide" : "Show"} Recipes
             </Button>
+          </div>
           
           <div className="max-w-3xl mx-auto">
             <ChatInterface />
