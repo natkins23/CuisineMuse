@@ -78,18 +78,17 @@ export default function RecipeModal({
               >
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remix Recipe</AlertDialogTitle>
+                    <AlertDialogTitle>Feature Coming Soon</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Create a copy of "{recipe.title}" to customize it. The original recipe will remain unchanged.
+                      The ability to remix recipes will be available soon!
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={handleRemix}
+                      onClick={() => setShowRemixAlert(false)}
                       className="bg-blue-500 hover:bg-blue-600"
                     >
-                      Remix Recipe
+                      Coming Soon
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
