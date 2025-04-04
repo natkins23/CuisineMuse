@@ -9,6 +9,7 @@ import { ChatMessage, RecipeSuggestion, sendChatMessage } from "@/lib/recipeApi"
 import { useToast } from "@/hooks/use-toast";
 import RecipeGrid from "@/components/recipe/RecipeGrid";
 import DetailedRecipeCard from "@/components/recipe/DetailedRecipeCard";
+import RecipeDisplay from "@/components/recipe/RecipeDisplay";
 
 // Demo suggestion categories
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
@@ -472,14 +473,11 @@ export default function DemoSection() {
                   // Find the last message that has recipe data
                   const recipeMessage = [...messages].reverse().find(m => m.recipe?.recipeData);
                   
-                  if (recipeMessage?.recipe?.recipeData && recipeSuggestions[0]) {
+                  if (recipeMessage?.recipe?.recipeData) {
+                    // Use the new RecipeDisplay component to directly show recipe data
+                    console.log("Recipe data:", recipeMessage.recipe.recipeData);
                     return (
-                      <DetailedRecipeCard
-                        title={recipeSuggestions[0].title}
-                        image={recipeSuggestions[0].image_url}
-                        time={recipeSuggestions[0].cooking_time}
-                        servings={recipeMessage.recipe.servings || "4 servings"}
-                        description={recipeSuggestions[0].description}
+                      <RecipeDisplay 
                         recipeData={recipeMessage.recipe.recipeData}
                       />
                     );
