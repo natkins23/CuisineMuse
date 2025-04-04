@@ -74,8 +74,29 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const handleEmailSignIn = async (isSignUp: boolean = false) => {
     try {
       setError(null);
-      setIsSigningIn(true);
       
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email) {
+        setError("Please enter your email address");
+        return;
+      }
+      if (!emailRegex.test(email)) {
+        setError("Please enter a valid email address");
+        return;
+      }
+      
+      // Password validation
+      if (!password) {
+        setError("Please enter your password");
+        return;
+      }
+      if (isSignUp && password.length < 6) {
+        setError("Password must be at least 6 characters long");
+        return;
+      }
+      
+      setIsSigningIn(true);
       const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
       const userCredential = await authFunction(email, password);
       
