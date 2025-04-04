@@ -17,7 +17,7 @@ export default function Navbar() {
   const { currentUser } = useAuth();
   const { frenchAccent, toggleFrenchAccent } = useFrenchAccent();
   const [location] = useLocation();
-  
+
   const isHomePage = location === "/";
 
   return (
@@ -25,12 +25,11 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <a 
+            <Link 
               href="/"
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = '/';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
               }}
               className="flex-shrink-0 flex items-center cursor-pointer"
             >
@@ -40,9 +39,9 @@ export default function Navbar() {
                 </svg>
               </span>
               <span className="font-serif font-bold text-xl text-green-800">CulinaryMuse</span>
-            </a>
+            </Link>
           </div>
-          
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
             {isHomePage ? (
               <>
@@ -84,17 +83,17 @@ export default function Navbar() {
                 </Link>
               </>
             )}
-            
+
             {currentUser && (
               <Link href="/my-recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out flex items-center">
                 <Book className="h-4 w-4 mr-1" />
                 My Recipes
               </Link>
             )}
-            
+
             <AuthStatus />
           </div>
-          
+
           <div className="flex items-center sm:hidden">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
@@ -134,7 +133,7 @@ export default function Navbar() {
                         Home
                       </Link>
                     )}
-                    
+
                     {currentUser && (
                       <Link 
                         href="/my-recipes" 
@@ -145,7 +144,7 @@ export default function Navbar() {
                         My Recipes
                       </Link>
                     )}
-                    
+
                     {!currentUser && (
                       <Button 
                         className="bg-orange-500 hover:bg-orange-600 transition-colors mt-4"
