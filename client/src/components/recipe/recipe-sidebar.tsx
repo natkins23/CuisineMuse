@@ -97,7 +97,7 @@ export default function RecipeSidebar({
                     </div>
                   </CardContent>
                 </div>
-                <div className="absolute top-2 right-2">
+                <div className="px-4 pb-3 flex justify-end">
                   <Button
                     variant="ghost"
                     size="icon"
