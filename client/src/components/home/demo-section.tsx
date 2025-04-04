@@ -8,9 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatMessage, sendChatMessage } from "@/lib/recipeApi";
 import { useToast } from "@/hooks/use-toast";
 
-// Demo meal type suggestions
-const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack"];
-const ingredientSuggestions = ["Add broccoli", "Add bell peppers", "Add zucchini", "Under 30 minutes"];
+// Demo suggestion categories
+const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
+const proteinSuggestions = ["Chicken", "Beef", "Fish", "Pork", "Tofu", "Beans", "Eggs"];
+const dietarySuggestions = ["Vegetarian", "Vegan", "Gluten-free", "Dairy-free", "Low-carb"];
+const ingredientSuggestions = ["Broccoli", "Bell peppers", "Zucchini", "Spinach", "Potatoes", "Rice", "Pasta"];
+const timeSuggestions = ["Under 30 minutes", "Quick & Easy", "One-pot meal"];
 
 export default function DemoSection() {
   const { toast } = useToast();
@@ -42,12 +45,14 @@ export default function DemoSection() {
     setIsLoading(true);
     
     try {
-      // Extract meal type and ingredient info from inputs
+      // Extract meal type, protein, dietary restrictions, and ingredient info from inputs
       const lowerInput = inputValue.toLowerCase();
       let detectedMealType = currentMealType;
       let detectedIngredient = currentIngredient;
+      let detectedProtein;
+      let detectedDietary;
       
-      // Simple detection - this could be more sophisticated
+      // Simple detection for meal type - this could be more sophisticated
       if (!detectedMealType) {
         for (const type of mealTypes) {
           if (lowerInput.includes(type.toLowerCase())) {
@@ -58,12 +63,28 @@ export default function DemoSection() {
         }
       }
       
-      // Check for ingredient mentions
+      // Check for protein mentions
+      for (const protein of proteinSuggestions) {
+        if (lowerInput.includes(protein.toLowerCase())) {
+          detectedProtein = protein;
+          break;
+        }
+      }
+      
+      // Check for dietary restrictions
+      for (const dietary of dietarySuggestions) {
+        if (lowerInput.includes(dietary.toLowerCase())) {
+          detectedDietary = dietary;
+          break;
+        }
+      }
+      
+      // Check for main ingredient mentions
       for (const ingredient of ingredientSuggestions) {
-        const simplifiedIngredient = ingredient.replace("Add ", "").toLowerCase();
-        if (lowerInput.includes(simplifiedIngredient)) {
-          detectedIngredient = simplifiedIngredient;
-          setCurrentIngredient(simplifiedIngredient);
+        const ingredientLower = ingredient.toLowerCase();
+        if (lowerInput.includes(ingredientLower)) {
+          detectedIngredient = ingredient;
+          setCurrentIngredient(ingredient);
           break;
         }
       }
@@ -72,9 +93,8 @@ export default function DemoSection() {
       const response = await sendChatMessage({
         messages: newMessages,
         mealType: detectedMealType,
-        mainIngredient: detectedIngredient,
-        dietary: lowerInput.includes("vegetarian") ? "vegetarian" : 
-                 lowerInput.includes("vegan") ? "vegan" : undefined
+        mainIngredient: detectedIngredient || detectedProtein,
+        dietary: detectedDietary?.toLowerCase()
       });
       
       // Add AI response to chat
@@ -155,7 +175,7 @@ export default function DemoSection() {
             </div>
 
             {/* Chat Messages */}
-            <div className="px-6 py-4 h-80 overflow-y-auto bg-neutral-50">
+            <div className="px-6 py-4 h-96 overflow-y-auto bg-neutral-50">
               <AnimatePresence>
                 {messages.map((message, index) => (
                   <motion.div 
@@ -205,30 +225,86 @@ export default function DemoSection() {
                 ))}
               </AnimatePresence>
 
-              {/* Suggestion chips after first message */}
+              {/* Suggestion categories after first message */}
               {messages.length === 1 && (
-                <div className="flex flex-wrap mb-6 space-x-2">
-                  {mealTypes.map((mealType, index) => (
-                    <SuggestionChip 
-                      key={index}
-                      text={mealType}
-                      onClick={() => handleChipClick(mealType)}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-500 mb-2">What meal are you looking for?</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {mealTypes.map((mealType, index) => (
+                        <SuggestionChip 
+                          key={index}
+                          text={mealType}
+                          onClick={() => handleChipClick(mealType)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               
-              {/* Ingredient suggestions after user message */}
+              {/* More suggestions after user selects a meal type */}
               {messages.length === 2 && (
-                <div className="flex flex-wrap mb-6 space-x-2">
-                  {ingredientSuggestions.map((ingredient, index) => (
-                    <SuggestionChip 
-                      key={index}
-                      text={ingredient}
-                      variant="green"
-                      onClick={() => handleChipClick(ingredient)}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  {/* Protein suggestions */}
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-500 mb-2">Main protein</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {proteinSuggestions.map((protein, index) => (
+                        <SuggestionChip 
+                          key={index}
+                          text={protein}
+                          variant="blue"
+                          onClick={() => handleChipClick(protein)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Dietary suggestions */}
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-500 mb-2">Dietary preferences</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {dietarySuggestions.map((dietary, index) => (
+                        <SuggestionChip 
+                          key={index}
+                          text={dietary}
+                          variant="purple"
+                          onClick={() => handleChipClick(dietary)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Ingredient suggestions */}
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-500 mb-2">Main ingredients</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {ingredientSuggestions.map((ingredient, index) => (
+                        <SuggestionChip 
+                          key={index}
+                          text={ingredient}
+                          variant="green"
+                          onClick={() => handleChipClick(ingredient)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Time suggestions */}
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-500 mb-2">Time considerations</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {timeSuggestions.map((time, index) => (
+                        <SuggestionChip 
+                          key={index}
+                          text={time}
+                          variant="orange"
+                          onClick={() => handleChipClick(time)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

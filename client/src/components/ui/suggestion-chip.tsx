@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface SuggestionChipProps {
   text: string;
-  variant?: "neutral" | "green";
+  variant?: "neutral" | "green" | "blue" | "purple" | "orange";
   onClick?: () => void;
 }
 
@@ -16,7 +16,10 @@ export default function SuggestionChip({
   
   const variantClasses = {
     neutral: "bg-white border-neutral-200 text-neutral-700 hover:border-orange-300",
-    green: "bg-white border-green-200 text-green-800 hover:border-green-400"
+    green: "bg-white border-green-200 text-green-800 hover:border-green-400",
+    blue: "bg-white border-blue-200 text-blue-700 hover:border-blue-400",
+    purple: "bg-white border-purple-200 text-purple-700 hover:border-purple-400",
+    orange: "bg-white border-orange-200 text-orange-700 hover:border-orange-400"
   };
   
   return (
