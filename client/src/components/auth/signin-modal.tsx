@@ -23,7 +23,24 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     try {
       setError(null);
       setIsSigningIn(true);
-      await signInWithGoogle();
+      const userCredential = await signInWithGoogle();
+      
+      // Send welcome email to new users
+      if (userCredential.user?.email) {
+        try {
+          await fetch('/api/email/test', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: userCredential.user.email })
+          });
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+          // Don't block sign in if email fails
+        }
+      }
+      
       onOpenChange(false); // Close modal on successful sign-in
     } catch (error: any) {
       console.error("Error during sign in:", error);
