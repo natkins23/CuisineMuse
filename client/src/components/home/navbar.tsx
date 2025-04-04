@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { Recipe } from "@shared/schema";
 import {
   Sheet,
   SheetContent,
@@ -18,6 +20,11 @@ export default function Navbar() {
   const { currentUser } = useAuth();
   const { frenchAccent, toggleFrenchAccent } = useFrenchAccent();
   const [location] = useLocation();
+  
+  const { data: recipes } = useQuery<Recipe[]>({
+    queryKey: ['/api/recipes', currentUser?.uid],
+    enabled: !!currentUser,
+  });
 
   const isHomePage = location === "/";
 
@@ -83,7 +90,7 @@ export default function Navbar() {
             {currentUser && (
               <Link href="/my-recipes" className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center">
                 <Book className="h-4 w-4 mr-1" />
-                Let's Get Cookin
+                Let's Get Cookin {recipes?.length ? `(${recipes.length}/10)` : ''}
               </Link>
             )}
 
