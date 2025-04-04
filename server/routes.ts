@@ -145,6 +145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dietary
       });
       
+      // Log the complete response for debugging
+      console.log("Chat API Response:", JSON.stringify(chatResponse, null, 2));
+      
       res.json(chatResponse);
     } catch (error: any) {
       console.error("Gemini Chat API error:", error);
