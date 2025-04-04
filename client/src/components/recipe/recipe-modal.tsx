@@ -57,15 +57,16 @@ export default function RecipeModal({
                   <Trash2 className="h-5 w-5" />
                 </Button>
               ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="self-start sm:self-center"
-                onClick={onClose}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="self-start sm:self-center"
+                  onClick={onClose}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Main modal content padded equally */}
