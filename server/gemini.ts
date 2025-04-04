@@ -98,6 +98,12 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
       }
     }
     
+    // Check if the response contains a recipe (basic detection)
+    const hasRecipe = 
+      responseText.toLowerCase().includes("ingredients:") || 
+      responseText.toLowerCase().includes("instructions:") ||
+      (responseText.toLowerCase().includes("minutes") && responseText.toLowerCase().includes("servings"));
+    
     // Create response object
     const response: ChatResponse = {
       message: {
