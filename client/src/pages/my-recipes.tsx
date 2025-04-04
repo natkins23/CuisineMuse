@@ -45,26 +45,35 @@ export default function MyRecipes() {
       <Navbar />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Collapsible on mobile */}
+        {/* Sidebar - Toggleable */}
         <aside 
-          className={`bg-white border-r border-neutral-200 overflow-y-auto transition-all duration-300 ease-in-out
-            ${sidebarOpen ? "w-80" : "w-0"} 
-            md:w-80 md:static md:block md:flex-shrink-0`}
+          className={`fixed md:static bg-white border-r border-neutral-200 h-full overflow-y-auto transition-all duration-300 ease-in-out z-10
+            ${sidebarOpen ? "w-80 translate-x-0" : "w-80 -translate-x-full md:translate-x-0"}`}
         >
+          <div className="flex justify-between items-center p-4 border-b border-neutral-200">
+            <h2 className="font-semibold">Saved Recipes</h2>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              ✕
+            </Button>
+          </div>
           <RecipeSidebar recipes={recipes || []} isLoading={isLoading} />
         </aside>
         
         {/* Main content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="md:hidden mb-4">
+          <div className="flex items-center mb-6">
             <Button 
               variant="outline" 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-full justify-between"
+              className="mr-2"
             >
-              {sidebarOpen ? "Hide" : "Show"} Saved Recipes
+              {sidebarOpen ? "Hide" : "Show"} Recipes
             </Button>
-          </div>
           
           <div className="max-w-3xl mx-auto">
             <ChatInterface />
