@@ -131,9 +131,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Generate recipe using Google Gemini - with stricter rate limiting
   // Get successful generations count
+  let successfulGenerations = 0;
+
   app.get("/api/generations", (req: Request, res: Response) => {
-    const count = getSuccessfulGenerations();
-    res.json({ count });
+    res.json({ count: successfulGenerations });
+  });
+
+  app.post("/api/generations/increment", (req: Request, res: Response) => {
+    successfulGenerations++;
+    res.json({ count: successfulGenerations });
   });
 
   app.post("/api/generate-recipe", aiLimiter, async (req: Request, res: Response) => {
@@ -153,6 +159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       res.json(recipeData);
+      // Increment generation count after successful generation
+      successfulGenerations++;
     } catch (error: any) {
       console.error("Gemini API error:", error);
       res.status(500).json({ 
@@ -182,6 +190,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mainIngredient,
         dietary
       });
+
+      // Log the complete response for debugging
+      console.log("Chat API Response:", JSON.stringify(chatResponse, null, 2));
+
+      res.json(chatResponse);
+    } catch (error: any) {
+      console.error("Gemini Chat API error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate chat response", 
+        error: error.message || String(error)
+      });
+    }
+  });
 
   // Debug endpoint to check auth methods
   app.get("/api/debug/auth-methods", async (req: Request, res: Response) => {
@@ -215,19 +236,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
-      // Log the complete response for debugging
-      console.log("Chat API Response:", JSON.stringify(chatResponse, null, 2));
-
-      res.json(chatResponse);
-    } catch (error: any) {
-      console.error("Gemini Chat API error:", error);
-      res.status(500).json({ 
-        message: "Failed to generate chat response", 
-        error: error.message || String(error)
-      });
-    }
-  });
 
   // Subscribe to newsletter
   app.post("/api/newsletter", async (req: Request, res: Response) => {
