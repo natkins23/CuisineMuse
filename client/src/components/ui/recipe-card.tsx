@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { Recipe } from "@shared/schema";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
+import SignInModal from "@/components/auth/signin-modal";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -11,7 +12,17 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   const { currentUser } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  const handleSave = () => {
+    if (!currentUser) {
+      setShowSignInModal(true);
+      return;
+    }
+    // TODO: Add save recipe functionality
+    console.log('Saving recipe:', recipe.title);
+  };
+
   const mealTypeColors: Record<string, string> = {
     "Breakfast": "bg-orange-100 text-orange-800",
     "Lunch": "bg-green-100 text-green-800",
@@ -19,9 +30,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     "Dessert": "bg-purple-100 text-purple-800",
     "Snack": "bg-blue-100 text-blue-800"
   };
-  
+
   const mealTypeColor = mealTypeColors[recipe.mealType] || "bg-green-100 text-green-800";
-  
+
   // Determine image based on meal type for demo purposes
   const getImageUrl = (mealType: string) => {
     switch(mealType) {
@@ -73,7 +84,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={currentUser ? handleSave : () => setIsModalOpen(true)}
+            onClick={handleSave}
             className="hover:text-orange-500"
           >
             <BookmarkPlus className="h-4 w-4" />
@@ -81,5 +92,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </CardContent>
     </Card>
+    {showSignInModal && <SignInModal onClose={() => setShowSignInModal(false)} />}
   );
 }
