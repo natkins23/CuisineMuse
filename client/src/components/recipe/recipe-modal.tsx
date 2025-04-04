@@ -21,39 +21,22 @@ export default function RecipeModal({ recipe, isOpen, onClose, onDelete }: Recip
         <div className="p-6 overflow-y-auto flex-1">
           <DialogHeader className="relative px-0 mb-4">
             <div className="flex justify-between items-start">
-              <div>
-                <Badge variant="outline" className="mb-2 px-2 py-1 text-xs bg-orange-50 text-orange-700">
-                  {recipe.mealType}
-                </Badge>
-                <DialogTitle className="text-2xl font-bold text-green-700">{recipe.title}</DialogTitle>
-              </div>
-              <div className="flex gap-2">
-                {onDelete && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      onDelete(recipe.id);
-                      onClose();
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={onClose}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <DialogTitle className="text-2xl font-bold text-green-700">{recipe.title}</DialogTitle>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </DialogHeader>
           
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+              <Badge variant="outline" className="px-2 py-1 text-xs bg-orange-50 text-orange-700">
+                {recipe.mealType}
+              </Badge>
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
                 <span>{recipe.prepTime} minutes</span>
