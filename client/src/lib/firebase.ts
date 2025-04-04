@@ -30,5 +30,6 @@ export const auth = getAuth(app);
 // Set persistence to local
 auth.useDeviceLanguage();
 
-// Export the app
+// Export the app (both default and named export)
+export { app };
 export default app;
