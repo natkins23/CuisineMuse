@@ -1,4 +1,3 @@
-
 import { Resend } from 'resend';
 
 if (!process.env.RESEND_API_KEY) {
@@ -29,7 +28,7 @@ export async function sendTestEmail(email: string, name?: string): Promise<boole
     console.log('Attempting to send test email via Resend to:', email);
 
     const { data, error } = await resend.emails.send({
-      from: 'CuisineMuse <hello@cuisinemusereplit.com>',
+      from: 'CuisineMuse <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome to CuisineMuse – Let\'s get cooking 🍳',
       html: `
@@ -79,7 +78,7 @@ export async function sendNewsletterEmail(email: string): Promise<boolean> {
     console.log('Attempting to send newsletter welcome email via Resend to:', email);
 
     const { data, error } = await resend.emails.send({
-      from: 'CuisineMuse <hello@cuisinemusereplit.com>',
+      from: 'CuisineMuse <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome to the Flavor Feed 🥘',
       html: `
@@ -122,20 +121,20 @@ export async function sendRecipeEmail(data: RecipeEmailData): Promise<boolean> {
     }
 
     const { recipe, recipientEmail } = data;
-    
+
     const ingredientsList = recipe.ingredients?.split('\n').map(i => `<li>${i.trim()}</li>`).join('\n') || '';
     const instructionsList = recipe.instructions?.split('\n').map(i => `<li>${i.trim()}</li>`).join('\n') || '';
 
     const { data: responseData, error } = await resend.emails.send({
-      from: 'CuisineMuse <hello@cuisinemusereplit.com>',
+      from: 'CuisineMuse <onboarding@resend.dev>',
       to: recipientEmail,
       subject: `Your Recipe: ${recipe.title} 🍳`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; color: #333;">
           <h1 style="color: #ff6f61;">${recipe.title}</h1>
-          
+
           ${recipe.description ? `<p style="font-style: italic;">${recipe.description}</p>` : ''}
-          
+
           <div style="margin: 20px 0; color: #666;">
             ${recipe.prepTime ? `<span>⏱️ ${recipe.prepTime} minutes</span>` : ''}
             ${recipe.servings ? `<span style="margin-left: 15px;">👥 Serves ${recipe.servings}</span>` : ''}
