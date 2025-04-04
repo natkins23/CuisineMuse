@@ -3,6 +3,16 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Clock, User, X, ChefHat, Utensils, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RecipeModalProps {
   recipe: Recipe | null;
@@ -18,12 +28,12 @@ export default function RecipeModal({
   onDelete,
 }: RecipeModalProps) {
   if (!recipe) return null;
+  
+  const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
 
   const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this recipe?')) {
-      onDelete?.(recipe.id);
-      onClose();
-    }
+    onDelete?.(recipe.id);
+    onClose();
   };
 
   return (
@@ -48,25 +58,39 @@ export default function RecipeModal({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </Button>
-              {onDelete ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="h-5 w-5" />
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="self-start sm:self-center"
-                  onClick={onClose}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                onClick={() => setShowDeleteAlert(true)}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="self-start sm:self-center"
+                onClick={onClose}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+
+              <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete "{recipe.title}". This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+                      Delete Recipe
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
 
