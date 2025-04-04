@@ -19,29 +19,44 @@ export default function RecipeModal({
 }: RecipeModalProps) {
   if (!recipe) return null;
 
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this recipe?')) {
+      onDelete?.(recipe.id);
+      onClose();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {/* Hide default Radix close button */}
       <DialogContent className="max-w-[95vw] sm:max-w-[80vw] h-[90vh] flex flex-col px-4 sm:px-8 py-4 [&>button]:hidden">
         <div className="overflow-y-auto flex-1">
-          {/* Title and delete/close button aligned with content */}
+          {/* Title and buttons aligned with content */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 px-2 sm:px-4">
             <h2 className="text-xl sm:text-2xl font-bold text-green-700">
               {recipe.title}
             </h2>
-            {onDelete ? (
+            <div className="flex gap-2 self-start sm:self-center">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 self-start sm:self-center"
-                onClick={() => {
-                  onDelete(recipe.id);
-                  onClose();
-                }}
+                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                onClick={() => alert('Remix feature coming soon!')}
               >
-                <Trash2 className="h-5 w-5" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
               </Button>
-            ) : (
+              {onDelete ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              ) : (
               <Button
                 variant="ghost"
                 size="icon"
