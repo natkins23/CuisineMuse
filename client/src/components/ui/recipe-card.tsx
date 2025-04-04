@@ -2,12 +2,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MoreVertical, Clock, Users, BookmarkPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Recipe } from "@shared/schema";
+import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 
 interface RecipeCardProps {
   recipe: Recipe;
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
+  const { currentUser } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const mealTypeColors: Record<string, string> = {
     "Breakfast": "bg-orange-100 text-orange-800",
     "Lunch": "bg-green-100 text-green-800",
