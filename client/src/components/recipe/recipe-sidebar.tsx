@@ -97,20 +97,18 @@ export default function RecipeSidebar({
                     </div>
                   </CardContent>
                 </div>
-                <div className="px-4 pb-3 flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      if (onDelete && recipe.id) {
-                        onDelete(recipe.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => {
+                    if (onDelete && recipe.id) {
+                      onDelete(recipe.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </Card>
             ))}
           </div>
