@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import { FrenchAccentProvider } from "@/context/FrenchAccentContext"; // Added import
 
 function Router() {
   return (
@@ -19,8 +20,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
+        <FrenchAccentProvider> {/* Added FrenchAccentProvider */}
+          <Router />
+          <Toaster />
+        </FrenchAccentProvider> {/* Closed FrenchAccentProvider */}
       </AuthProvider>
     </QueryClientProvider>
   );

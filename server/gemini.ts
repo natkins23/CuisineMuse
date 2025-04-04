@@ -76,20 +76,27 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     
     // Generate content using Gemini Pro
     const result = await chatModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: conversationHistory }] }],
+      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease include 3 recipe suggestions in your response, each with:\n- A title\n- Cooking time\n- A relevant image URL from Unsplash\n- A brief description\n\nFormat them as JSON in an 'suggestions' array.`}] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 800,
+        maxOutputTokens: 1000,
       }
     });
     
     const responseText = result.response.text();
     
-    // Check if the response contains a recipe (very basic detection)
-    const hasRecipe = 
-      responseText.includes("ingredients:") || 
-      responseText.includes("Instructions:") ||
-      responseText.includes("minutes") && responseText.includes("servings");
+    // Extract suggestions from the response
+    const suggestionsMatch = responseText.match(/\{[\s\S]*"suggestions":\s*\[[\s\S]*\][\s\S]*\}/);
+    let suggestions = [];
+    
+    if (suggestionsMatch) {
+      try {
+        const parsedResponse = JSON.parse(suggestionsMatch[0]);
+        suggestions = parsedResponse.suggestions;
+      } catch (e) {
+        console.error("Failed to parse suggestions:", e);
+      }
+    }
     
     // Create response object
     const response: ChatResponse = {

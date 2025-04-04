@@ -9,10 +9,13 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AuthStatus from "@/components/auth/auth-status";
 import { useAuth } from "@/context/AuthContext";
+import { Switch } from "@/components/ui/switch";
+import { useFrenchAccent } from "@/context/FrenchAccentContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { currentUser } = useAuth();
+  const { frenchAccent, toggleFrenchAccent } = useFrenchAccent();
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -77,6 +80,16 @@ export default function Navbar() {
                         Get Started
                       </Button>
                     )}
+                    <div className="mt-4 pt-4 border-t border-neutral-200">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-neutral-600">French Accent</label>
+                        <Switch
+                          checked={frenchAccent}
+                          onCheckedChange={toggleFrenchAccent}
+                          aria-label="Toggle French accent"
+                        />
+                      </div>
+                    </div>
                     <div className="mt-2">
                       <AuthStatus />
                     </div>
