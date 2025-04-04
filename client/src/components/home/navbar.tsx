@@ -77,13 +77,7 @@ export default function Navbar() {
                   Save Recipes
                 </a>
               </>
-            ) : (
-              <>
-                <Link href="/" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">
-                  Home
-                </Link>
-              </>
-            )}
+            ) : null}
 
             {currentUser && (
               <Link href="/my-recipes" className="text-neutral-600 hover:text-green-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out flex items-center">
