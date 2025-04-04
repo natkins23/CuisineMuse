@@ -1,10 +1,13 @@
+
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { LogIn, AlertTriangle, ExternalLink } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SignInModalProps {
   open: boolean;
@@ -12,12 +15,12 @@ interface SignInModalProps {
 }
 
 export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const hostname = window.location.hostname;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleGoogleSignIn = async () => {
     try {
@@ -25,8 +28,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       setIsSigningIn(true);
       const userCredential = await signInWithGoogle();
       
-      // Send welcome email to new users
-      if (userCredential.user?.email) {
+      if (userCredential?.user?.email) {
         try {
           const displayName = userCredential.user.displayName || 'there';
           await fetch('/api/email/test', {
@@ -41,11 +43,10 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           });
         } catch (emailError) {
           console.error("Failed to send welcome email:", emailError);
-          // Don't block sign in if email fails
         }
       }
       
-      onOpenChange(false); // Close modal on successful sign-in
+      onOpenChange(false);
     } catch (error: any) {
       console.error("Error during sign in:", error);
       if (error.code === "auth/unauthorized-domain") {
@@ -59,16 +60,50 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     }
   };
 
+  const handleEmailSignIn = async (isSignUp: boolean = false) => {
+    try {
+      setError(null);
+      setIsSigningIn(true);
+      
+      const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
+      const userCredential = await authFunction(email, password);
+      
+      if (isSignUp && userCredential?.user?.email) {
+        try {
+          await fetch('/api/email/test', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              email: userCredential.user.email,
+              name: email.split('@')[0]
+            })
+          });
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+        }
+      }
+      
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Error during email auth:", error);
+      setError(error.message || "An error occurred during authentication");
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold">Sign In</DialogTitle>
           <DialogDescription className="text-center">
-            Continue with your Google account to save recipes and personalize your experience.
+            Continue to save recipes and personalize your experience.
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
@@ -76,7 +111,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {showSetupInstructions ? (
           <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 my-4">
             <h3 className="font-medium text-amber-900 flex items-center mb-2">
@@ -84,20 +119,11 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
               Domain Not Authorized
             </h3>
             <p className="text-sm text-amber-800 mb-3">
-              You need to add this domain to your Firebase project's authorized domains list:
+              Add this domain to your Firebase project's authorized domains:
             </p>
             <div className="bg-amber-100 p-2 rounded font-mono text-xs mb-3">
-              {hostname}
+              {window.location.hostname}
             </div>
-            <ol className="text-sm text-amber-800 list-decimal list-inside space-y-2">
-              <li>Go to the Firebase console</li>
-              <li>Select your project: "culinarymuse-66553"</li>
-              <li>Click "Authentication" in the left sidebar</li>
-              <li>Go to the "Settings" tab</li>
-              <li>Scroll to "Authorized domains" and click "Add domain"</li>
-              <li>Add the domain shown above</li>
-              <li>Click "Add"</li>
-            </ol>
             <Button 
               className="w-full mt-4" 
               variant="outline"
@@ -108,21 +134,58 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col space-y-4 py-4">
-            <Button 
-              variant="outline" 
-              className="flex items-center justify-center w-full p-6"
-              onClick={handleGoogleSignIn}
-              disabled={isSigningIn}
-            >
-              <SiGoogle className="h-5 w-5 mr-2 text-red-500" />
-              <span>{isSigningIn ? "Signing in..." : "Continue with Google"}</span>
-            </Button>
+          <Tabs defaultValue="email" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="google">Google</TabsTrigger>
+            </TabsList>
             
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              By continuing, you agree to our Terms of Service and Privacy Policy.
-            </div>
-          </div>
+            <TabsContent value="email" className="space-y-4">
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => handleEmailSignIn(false)}
+                    disabled={isSigningIn}
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    variant="outline"
+                    onClick={() => handleEmailSignIn(true)}
+                    disabled={isSigningIn}
+                  >
+                    Sign Up
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="google">
+              <Button 
+                variant="outline" 
+                className="flex items-center justify-center w-full p-6"
+                onClick={handleGoogleSignIn}
+                disabled={isSigningIn}
+              >
+                <SiGoogle className="h-5 w-5 mr-2 text-red-500" />
+                <span>{isSigningIn ? "Signing in..." : "Continue with Google"}</span>
+              </Button>
+            </TabsContent>
+          </Tabs>
         )}
 
         <DialogFooter className="sm:justify-start">

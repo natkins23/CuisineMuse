@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { 
   User, 
-  GoogleAuthProvider, 
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, 
   signInWithPopup,
   signInWithRedirect, 
   getRedirectResult,
@@ -139,10 +141,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const signInWithEmail = async (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
   const value = {
     currentUser,
     loading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     logOut
   };
 
