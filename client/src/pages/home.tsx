@@ -24,9 +24,9 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <FeatureSection />
+      <CTASection />
       <DemoSection />
       <RecipeShowcase recipes={recipeData} />
-      <CTASection />
       <AIIntegration />
       <Footer />
     </div>
