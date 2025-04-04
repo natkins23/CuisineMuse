@@ -121,7 +121,7 @@ export default function ChatInterface() {
 
       // Add AI response to chat
       setMessages([...newMessages, response.message]);
-      // Increment generation count on server
+      // Increment generation count on server and update UI
       const genResponse = await fetch('/api/generations/increment');
       const genData = await genResponse.json();
       setGenerationCount(genData.count);
