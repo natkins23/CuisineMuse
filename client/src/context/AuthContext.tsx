@@ -83,6 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       provider.addScope('email');
       provider.addScope('profile');
       
+      console.log("Initializing Google Sign-In with:", {
+        providerId: provider.providerId,
+        customParameters: provider.customParameters,
+        scopes: provider.scopes,
+        projectId: auth.app.options.projectId
+      });
+      
       // Handle unauthorized domain error
       // This is a temporary solution to show user what they need to do
       // Ideally, the domain should be added to authorized domains in Firebase Console

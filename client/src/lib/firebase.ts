@@ -29,6 +29,14 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication
 export const auth = getAuth(app);
 
+// Log auth initialization status
+console.log("Firebase Auth initialized:", {
+  currentUser: auth.currentUser,
+  config: auth.config,
+  appName: auth.app.name,
+  projectId: auth.app.options.projectId
+});
+
 // Set persistence to local
 auth.useDeviceLanguage();
 

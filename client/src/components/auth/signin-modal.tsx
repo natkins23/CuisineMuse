@@ -158,8 +158,19 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       const { email, password } = form.getValues();
       
       // Check authentication methods for email
-      const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log("Auth methods found for", email, ":", methods);
+      console.log("Checking auth methods for email:", email, "with auth instance:", {
+        initialized: !!auth,
+        currentUser: auth.currentUser,
+        projectId: auth.app.options.projectId
+      });
+      
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        console.log("Auth methods response:", {
+          email,
+          methods,
+          timestamp: new Date().toISOString()
+        });
 
       if (!isSignUp) {
         // Sign In flow
