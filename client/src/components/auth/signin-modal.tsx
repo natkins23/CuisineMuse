@@ -3,7 +3,7 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchSignInMethodsForEmail } from "firebase/auth";
+import { fetchSignInMethodsForEmail, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -157,49 +157,30 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
       const { email: rawEmail, password } = form.getValues();
       const email = rawEmail.toLowerCase().trim();
-      
-      try {
-        // Ensure auth is initialized
-        if (!auth.app) {
-          throw new Error("Firebase Auth not initialized");
-        }
 
-        // Wait for auth initialization
-        await new Promise<void>((resolve) => {
-          const unsubscribe = onAuthStateChanged(auth, () => {
-            unsubscribe();
-            resolve();
-          });
-        });
-
-        console.log("Checking auth methods for email:", email, "with auth config:", {
-          projectId: auth.app.options.projectId,
-          apiKey: auth.app.options.apiKey ? "present" : "missing"
-        });
-        
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        console.log("Auth methods found for", email, ":", methods);
-
-      setIsSigningIn(true);
-      const authFunction = isSignUp ? signUpWithEmail : signInWithEmail;
-      await authFunction(email, password);
-      onOpenChange(false);
-    } catch (error: any) {
-      console.error("Error during auth:", error);
-      if (error.code === 'auth/wrong-password') {
-        setError("Incorrect password. Please try again.");
-      } else if (error.code === 'auth/too-many-requests') {
-        setError("Too many attempts. Please try again later.");
-      } else {
-        setError(error.message || "An error occurred during authentication");
+      // Ensure auth is initialized
+      if (!auth.app) {
+        throw new Error("Firebase Auth not initialized");
       }
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
 
-  if (!isSignUp) {
-    // Sign In flow
+      // Wait for auth initialization
+      await new Promise<void>((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, () => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      console.log("Checking auth methods for email:", email, "with auth config:", {
+        projectId: auth.app.options.projectId,
+        apiKey: auth.app.options.apiKey ? "present" : "missing"
+      });
+
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      console.log("Auth methods found for", email, ":", methods);
+
+      if (!isSignUp) {
+        // Sign In flow
         if (methods.includes('google.com')) {
           setError("This account uses Google Sign-In. Please use that option instead.");
           return;
@@ -244,7 +225,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error during email auth:", error);
-      
+
       if (error.message?.includes("Firebase Auth not initialized")) {
         setError("Authentication service not ready. Please try again.");
       } else if (error.code === 'auth/wrong-password') {
