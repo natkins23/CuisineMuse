@@ -30,6 +30,7 @@ export interface ChatResponse {
     servings: string; // Formatted servings (e.g., "4 servings")
     recipeData?: Partial<GeneratedRecipe>; // Full recipe data if available
   };
+  reactComponent?: string; // The React component code as a string
 }
 
 /**
@@ -76,25 +77,39 @@ export async function generateChatResponse(request: ChatRequest): Promise<ChatRe
     
     // Generate content using Gemini Pro
     const result = await chatModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease include 3 recipe suggestions in your response, each with:\n- A title\n- Cooking time\n- A relevant image URL from Unsplash\n- A brief description\n\nFormat them as JSON in an 'suggestions' array.`}] }],
+      contents: [{ role: "user", parts: [{ text: `${conversationHistory}\n\nPlease include 3 recipe suggestions in your response, each with:
+- A title
+- Cooking time
+- A relevant image URL from Unsplash
+- A brief description
+
+I want you to return a reusable React component called RecipeCard that displays this information.
+The component should:
+- Accept an array of recipe objects as props
+- Display each recipe with its title, image, cooking time, and description
+- Use clean, modern styling with CSS
+- Be fully functional and ready to use in a React project
+
+Return only valid React JSX code without any explanations. The component should be self-contained and directly usable.`}] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1000,
+        maxOutputTokens: 1500,
       }
     });
     
     const responseText = result.response.text();
     
-    // Extract suggestions from the response
-    const suggestionsMatch = responseText.match(/\{[\s\S]*"suggestions":\s*\[[\s\S]*\][\s\S]*\}/);
-    let suggestions = [];
+    // Extract the React component code from the response
+    const componentMatch = responseText.match(/```(?:jsx|tsx)?\s*(import[\s\S]*?;|const[\s\S]*?=>[\s\S]*?;|function[\s\S]*?\})\s*```/);
+    let reactComponent = null;
     
-    if (suggestionsMatch) {
-      try {
-        const parsedResponse = JSON.parse(suggestionsMatch[0]);
-        suggestions = parsedResponse.suggestions;
-      } catch (e) {
-        console.error("Failed to parse suggestions:", e);
+    if (componentMatch && componentMatch[1]) {
+      reactComponent = componentMatch[1].trim();
+    } else {
+      // Try alternate pattern without code block markers
+      const altMatch = responseText.match(/(import[\s\S]*?;|const[\s\S]*?=>[\s\S]*?;|function[\s\S]*?\})/);
+      if (altMatch && altMatch[1]) {
+        reactComponent = altMatch[1].trim();
       }
     }
     
