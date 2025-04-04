@@ -117,19 +117,28 @@ export default function DemoSection() {
         dietary: detectedDietary?.toLowerCase()
       });
       
-      // Add AI response to chat
-      setMessages([...newMessages, response.message]);
+      // We'll update messages with our enhanced messageWithRecipe below
       
       // Log the complete response for debugging
       console.log("Complete API response:", response);
+      
+      // Create a new array of messages
+      let updatedMessages;
       
       // Check for recipe data in the response
       if (response.recipe?.recipeData) {
         console.log("Recipe data detected:", response.recipe.recipeData);
         
-        // Store the recipe object in the message for proper display
-        const messageWithRecipe = {...response.message, recipe: response.recipe};
-        setMessages([...newMessages, messageWithRecipe]);
+        // We need to ensure recipe data is attached to the message
+        const messageWithRecipe = {
+          ...response.message,
+          recipe: response.recipe
+        };
+        
+        console.log("Message with recipe:", messageWithRecipe);
+        
+        // Use the message with the recipe data
+        updatedMessages = [...newMessages, messageWithRecipe];
         
         // If we also have suggestions, store them
         if (response.suggestions && response.suggestions.length > 0) {
@@ -147,13 +156,22 @@ export default function DemoSection() {
         // Hide the suggestions UI when displaying recipe results
         setShowSuggestions(false);
       } 
-      // Check for recipe suggestions without recipe data
-      else if (response.suggestions && response.suggestions.length > 0) {
-        // Store the recipe suggestions
-        setRecipeSuggestions(response.suggestions);
-        // Hide the suggestions UI when displaying recipe results
-        setShowSuggestions(false);
+      // If no recipe data, just use the message as is
+      else {
+        updatedMessages = [...newMessages, response.message];
+        
+        // Check for recipe suggestions without recipe data
+        if (response.suggestions && response.suggestions.length > 0) {
+          // Store the recipe suggestions
+          setRecipeSuggestions(response.suggestions);
+          // Hide the suggestions UI when displaying recipe results
+          setShowSuggestions(false);
+        }
       }
+      
+      // Update the messages state with our new messages array
+      console.log("Setting messages:", updatedMessages);
+      setMessages(updatedMessages);
     } catch (error: any) {
       console.error("Chat error:", error);
       
