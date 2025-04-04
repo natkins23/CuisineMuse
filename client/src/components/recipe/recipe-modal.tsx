@@ -32,12 +32,6 @@ export default function RecipeModal({
 
   const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
 
-  const formatList = (content: string | string[] | undefined): string[] => {
-    if (!content) return [];
-    if (Array.isArray(content)) return content;
-    return content.split('\n').filter(item => item.trim().length > 0);
-  };
-
   const handleDelete = async () => {
     if (onDelete && recipe.id) {
       await onDelete(recipe.id);
@@ -46,8 +40,7 @@ export default function RecipeModal({
     }
   };
 
-  const ingredients = formatList(recipe.ingredients);
-  const instructions = formatList(recipe.instructions);
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : []; //Handle non-array ingredients
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
