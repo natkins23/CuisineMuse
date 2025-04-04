@@ -5,8 +5,9 @@ import SuggestionChip from "@/components/ui/suggestion-chip";
 import RateLimitNotification from "@/components/ui/rate-limit-notification";
 import { Zap, User, FileDown, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChatMessage, sendChatMessage } from "@/lib/recipeApi";
+import { ChatMessage, RecipeSuggestion, sendChatMessage } from "@/lib/recipeApi";
 import { useToast } from "@/hooks/use-toast";
+import RecipeGrid from "@/components/recipe/RecipeGrid";
 
 // Demo suggestion categories
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
@@ -44,6 +45,9 @@ export default function DemoSection() {
   
   // Control visibility of suggestion sections
   const [showSuggestions, setShowSuggestions] = useState(true);
+  
+  // Store recipe suggestions from the API
+  const [recipeSuggestions, setRecipeSuggestions] = useState<RecipeSuggestion[]>([]);
   
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -113,6 +117,14 @@ export default function DemoSection() {
       
       // Add AI response to chat
       setMessages([...newMessages, response.message]);
+      
+      // Check for recipe suggestions in the response
+      if (response.suggestions && response.suggestions.length > 0) {
+        // Store the recipe suggestions
+        setRecipeSuggestions(response.suggestions);
+        // Hide the suggestions UI when displaying recipe results
+        setShowSuggestions(false);
+      }
     } catch (error: any) {
       console.error("Chat error:", error);
       
@@ -442,6 +454,30 @@ export default function DemoSection() {
             </div>
           </div>
 
+          {/* Recipe Grid for displaying recipe suggestions */}
+          {recipeSuggestions.length > 0 && (
+            <motion.div 
+              className="mt-10 bg-white rounded-xl shadow-lg overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <div className="bg-orange-500 text-white px-6 py-3">
+                <h3 className="font-medium">Suggested Recipes</h3>
+              </div>
+              <RecipeGrid recipes={recipeSuggestions} />
+              <div className="p-4 text-center">
+                <Button 
+                  onClick={() => { setRecipeSuggestions([]); setShowSuggestions(true); }}
+                  variant="outline"
+                  className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                >
+                  Go back to suggestions
+                </Button>
+              </div>
+            </motion.div>
+          )}
+          
           <div className="mt-8 text-center">
             <p className="text-neutral-600 text-sm">Powered by Google Gemini AI</p>
           </div>
