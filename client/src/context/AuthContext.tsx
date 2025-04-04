@@ -106,13 +106,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Try popup first (for modal dialog)
       try {
         const result = await signInWithPopup(auth, provider);
-        console.log("Google Sign-in Result:", {
-          displayName: result.user.displayName,
-          email: result.user.email,
-          providerId: result.user.providerId,
-          providerData: result.user.providerData,
-          metadata: result.user.metadata
-        });
+        
+        // Verify user was properly saved
+        const email = result.user.email;
+        if (email) {
+          // Check if methods are properly registered
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          console.log("Auth methods after Google sign-in:", {
+            email,
+            methods,
+            isNewUser: result.additionalUserInfo?.isNewUser,
+            providerId: result.additionalUserInfo?.providerId,
+            providerData: result.user.providerData
+          });
+
+          // If methods don't include google.com, something went wrong
+          if (!methods.includes('google.com')) {
+            console.error("Google auth method not properly registered");
+            throw new Error("Authentication error - provider not registered");
+          }
+        }
 
         // Verify the user is properly persisted
         const methods = await fetchSignInMethodsForEmail(auth, result.user.email!);
