@@ -14,7 +14,7 @@ import { LogIn, AlertTriangle, ExternalLink } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 function CheckEmailExists({ email }: { email: string }) {
   const [exists, setExists] = useState<boolean | null>(null);
