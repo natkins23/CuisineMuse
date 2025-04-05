@@ -8,6 +8,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<User>): Promise<User | undefined>;
   
   // Recipe methods
   getRecipes(userId?: number): Promise<Recipe[]>;
@@ -87,9 +88,33 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      savedRecipes: [] 
+    };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    // Handle the saved recipes array correctly
+    let savedRecipes = existingUser.savedRecipes || [];
+    if (userUpdate.savedRecipes) {
+      savedRecipes = userUpdate.savedRecipes;
+    }
+    
+    const updatedUser: User = {
+      ...existingUser,
+      ...userUpdate,
+      savedRecipes
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
   
   async getRecipes(userId?: number): Promise<Recipe[]> {

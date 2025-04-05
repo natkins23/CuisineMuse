@@ -8,6 +8,7 @@ export interface RecipeGenerationOptions {
 }
 
 export interface GeneratedRecipe {
+  id?: number;
   title: string;
   description: string;
   ingredients: string;
@@ -15,6 +16,9 @@ export interface GeneratedRecipe {
   mealType: string;
   prepTime: number;
   servings: number;
+  userId?: number | null;
+  isSaved?: boolean;
+  createdAt?: Date | string;
 }
 
 /**
@@ -149,5 +153,55 @@ export async function sendTestEmail(email: string): Promise<{ message: string }>
   } catch (error: any) {
     console.error("Error sending test email:", error);
     throw new Error("Failed to send test email. Please try again.");
+  }
+}
+
+/**
+ * Get saved recipes for a user
+ */
+export async function getSavedRecipes(userId: number): Promise<GeneratedRecipe[]> {
+  try {
+    const response = await apiRequest<GeneratedRecipe[]>(`/api/users/${userId}/saved-recipes`, {
+      method: "GET"
+    });
+    
+    return response;
+  } catch (error: any) {
+    console.error("Error fetching saved recipes:", error);
+    throw new Error("Failed to fetch saved recipes. Please try again.");
+  }
+}
+
+/**
+ * Save a recipe for a user
+ */
+export async function saveRecipe(recipeId: number, userId: number): Promise<{ message: string }> {
+  try {
+    const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
+      method: "POST",
+      body: { userId } as any,
+    });
+    
+    return response;
+  } catch (error: any) {
+    console.error("Error saving recipe:", error);
+    throw new Error("Failed to save recipe. Please try again.");
+  }
+}
+
+/**
+ * Remove a recipe from saved recipes
+ */
+export async function unsaveRecipe(recipeId: number, userId: number): Promise<{ message: string }> {
+  try {
+    const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
+      method: "DELETE",
+      body: { userId } as any,
+    });
+    
+    return response;
+  } catch (error: any) {
+    console.error("Error removing saved recipe:", error);
+    throw new Error("Failed to remove recipe from saved recipes. Please try again.");
   }
 }

@@ -1,4 +1,45 @@
-const recipeId = Number(req.params.id);
+import express, { Express, Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { createServer } from "http";
+import { IStorage } from "./storage";
+import { generateRecipe, generateChatResponse, getSuccessfulGenerations } from "./gemini";
+import { insertRecipeSchema, insertNewsletterSchema } from "@shared/schema";
+import { sendRecipeEmail, sendTestEmail } from "./email";
+import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit";
+import admin from "./firebase-admin";
+
+export function registerRoutes(app: Express, db: IStorage) {
+  // Get user's saved recipes
+  app.get("/api/users/:id/saved-recipes", async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.params.id);
+      
+      const user = await db.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const savedRecipeIds = user.savedRecipes || [];
+      const savedRecipes = [];
+      
+      for (const recipeId of savedRecipeIds) {
+        const recipe = await db.getRecipeById(recipeId);
+        if (recipe) {
+          savedRecipes.push(recipe);
+        }
+      }
+      
+      res.json(savedRecipes);
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+      res.status(500).json({ message: "Failed to fetch saved recipes" });
+    }
+  });
+
+  // Save recipe
+  app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
+    try {
+      const recipeId = Number(req.params.id);
       const userId = req.body.userId;
 
       if (!userId) {
@@ -22,8 +63,36 @@ const recipeId = Number(req.params.id);
       console.error("Error saving recipe:", error);
       res.status(500).json({ message: "Failed to save recipe" });
     }
-      console.error("Error saving recipe:", error);
-      res.status(500).json({ message: "Failed to save recipe" });
+  });
+  
+  // Remove recipe from saved recipes
+  app.delete("/api/recipes/:id/save", async (req: Request, res: Response) => {
+    try {
+      const recipeId = Number(req.params.id);
+      const userId = req.body.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "User must be logged in" });
+      }
+
+      const user = await db.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Remove recipe from user's saved recipes
+      const savedRecipes = user.savedRecipes || [];
+      const index = savedRecipes.indexOf(recipeId);
+      
+      if (index !== -1) {
+        savedRecipes.splice(index, 1);
+        await db.updateUser(userId, { savedRecipes });
+      }
+
+      res.json({ message: "Recipe removed from saved recipes" });
+    } catch (error) {
+      console.error("Error removing saved recipe:", error);
+      res.status(500).json({ message: "Failed to remove recipe from saved recipes" });
     }
   });
 

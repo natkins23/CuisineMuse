@@ -6,6 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
 });
 
 export const recipes = pgTable("recipes", {
@@ -31,6 +32,7 @@ export const newsletters = pgTable("newsletters", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
 });
 
 export const insertRecipeSchema = createInsertSchema(recipes).omit({
@@ -43,17 +45,12 @@ export const insertNewsletterSchema = createInsertSchema(newsletters).pick({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type User = typeof users.$inferSelect & {
+  savedRecipes?: number[]; // Array of recipe IDs
+};
 
 export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 
 export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
 export type Newsletter = typeof newsletters.$inferSelect;
-
-export interface User {
-  id: number;
-  email: string;
-  username: string;
-  savedRecipes?: number[]; // Array of recipe IDs
-}

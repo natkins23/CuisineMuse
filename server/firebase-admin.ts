@@ -18,8 +18,8 @@ try {
   console.error("Error parsing FIREBASE_SERVICE_ACCOUNT:", error);
 }
 
-// Initialize the app if it hasn't been initialized already
-if (!admin.apps.length) {
+// Initialize the app with a workaround for checking if already initialized
+try {
   const config: admin.AppOptions = {
     projectId: process.env.VITE_FIREBASE_PROJECT_ID,
   };
@@ -29,6 +29,11 @@ if (!admin.apps.length) {
   }
   
   admin.initializeApp(config);
+} catch (error: any) {
+  // If already initialized, this error will be thrown
+  if (error.code !== 'app/duplicate-app') {
+    console.error("Error initializing Firebase Admin:", error);
+  }
 }
 
 // Export the admin SDK
