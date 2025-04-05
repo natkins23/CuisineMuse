@@ -22,6 +22,9 @@ const recipeId = Number(req.params.id);
       console.error("Error saving recipe:", error);
       res.status(500).json({ message: "Failed to save recipe" });
     }
+      console.error("Error saving recipe:", error);
+      res.status(500).json({ message: "Failed to save recipe" });
+    }
   });
 
   // Delete recipe
