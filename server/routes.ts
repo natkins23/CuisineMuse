@@ -1,92 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
-import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { firestoreStorage } from "./firestore";
-import { insertNewsletterSchema, insertRecipeSchema } from "@shared/schema";
-import { generateRecipe, generateChatResponse } from "./gemini";
-import { verifyFirebaseToken } from "./firebase-admin";
-import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit";
-import { sendRecipeEmail, sendTestEmail } from "./email";
-import { z } from "zod";
-
-// Use in-memory storage instead of Firestore to avoid permission issues
-// const db = firestoreStorage;
-const db = storage; // Using in-memory storage for simplicity
-
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply default rate limiting to all API routes
-  app.use("/api", defaultLimiter);
-
-  // prefix all routes with /api
-
-  // Get all recipes
-  app.get("/api/recipes", async (req: Request, res: Response) => {
-    try {
-      const userId = req.query.userId ? Number(req.query.userId) : undefined;
-      const recipes = await db.getRecipes(userId);
-      res.json(recipes);
-    } catch (error) {
-      console.error("Error fetching recipes:", error);
-      res.status(500).json({ message: "Failed to fetch recipes" });
-    }
-  });
-
-  // Get single recipe
-  app.get("/api/recipes/:id", async (req: Request, res: Response) => {
-    try {
-      const id = Number(req.params.id);
-      const recipe = await db.getRecipeById(id);
-
-      if (!recipe) {
-        return res.status(404).json({ message: "Recipe not found" });
-      }
-
-      res.json(recipe);
-    } catch (error) {
-      console.error("Error fetching recipe:", error);
-      res.status(500).json({ message: "Failed to fetch recipe" });
-    }
-  });
-
-  // Create new recipe - Protected route requiring Firebase auth
-  app.post("/api/recipes", async (req: Request, res: Response) => {
-    try {
-      const validatedData = insertRecipeSchema.safeParse(req.body);
-
-      if (!validatedData.success) {
-        return res.status(400).json({ message: "Invalid recipe data", errors: validatedData.error.format() });
-      }
-
-      const recipe = await db.createRecipe(validatedData.data);
-      res.status(201).json(recipe);
-    } catch (error) {
-      console.error("Error creating recipe:", error);
-      res.status(500).json({ message: "Failed to create recipe" });
-    }
-  });
-
-  // Update recipe
-  app.patch("/api/recipes/:id", async (req: Request, res: Response) => {
-    try {
-      const id = Number(req.params.id);
-      const existingRecipe = await db.getRecipeById(id);
-
-      if (!existingRecipe) {
-        return res.status(404).json({ message: "Recipe not found" });
-      }
-
-      const recipe = await db.updateRecipe(id, req.body);
-      res.json(recipe);
-    } catch (error) {
-      console.error("Error updating recipe:", error);
-      res.status(500).json({ message: "Failed to update recipe" });
-    }
-  });
-
-  // Save recipe for user
-  app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
-    try {
-      const recipeId = Number(req.params.id);
+(req.params.id);
       const userId = req.body.userId;
 
       if (!userId) {
@@ -142,33 +54,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ count: successfulGenerations });
   });
 
-  app.post("/api/generate-recipe", aiLimiter, async (req: Request, res: Response) => {
-    try {
-      const { prompt, mealType, mainIngredient, dietary } = req.body;
+  app.post(
+    "/api/generate-recipe",
+    aiLimiter,
+    async (req: Request, res: Response) => {
+      try {
+        const { prompt, mealType, mainIngredient, dietary } = req.body;
 
-      if (!prompt) {
-        return res.status(400).json({ message: "Prompt is required" });
+        if (!prompt) {
+          return res.status(400).json({ message: "Prompt is required" });
+        }
+
+        const recipeData = await generateRecipe({
+          prompt,
+          mealType,
+          mainIngredient,
+          dietary,
+        });
+
+        successfulGenerations++;
+        console.log(
+          `[✔️ Generation #${successfulGenerations}] Prompt: ${prompt}`,
+        );
+        res.json(recipeData);
+      } catch (error: any) {
+        console.error("Gemini API error:", error);
+        res.status(500).json({
+          message: "Failed to generate recipe",
+          error: error.message || String(error),
+        });
       }
-
-      // Use our server-side generateRecipe function
-      const recipeData = await generateRecipe({
-        prompt,
-        mealType,
-        mainIngredient,
-        dietary
-      });
-
-      res.json(recipeData);
-      // Increment generation count after successful generation
-      successfulGenerations++;
-    } catch (error: any) {
-      console.error("Gemini API error:", error);
-      res.status(500).json({ 
-        message: "Failed to generate recipe", 
-        error: error.message || String(error)
-      });
-    }
-  });
+    },
+  );
 
   // Chat conversation with recipe assistant - with stricter rate limiting
   app.post("/api/chat", aiLimiter, async (req: Request, res: Response) => {
@@ -182,14 +99,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const lastMessage = messages[messages.length - 1];
       if (!lastMessage || lastMessage.role !== "user" || !lastMessage.content) {
-        return res.status(400).json({ message: "Last message must be from user with content" });
+        return res
+          .status(400)
+          .json({ message: "Last message must be from user with content" });
       }
 
       const chatResponse = await generateChatResponse({
         messages,
         mealType,
         mainIngredient,
-        dietary
+        dietary,
       });
 
       // Log the complete response for debugging
@@ -198,9 +117,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(chatResponse);
     } catch (error: any) {
       console.error("Gemini Chat API error:", error);
-      res.status(500).json({ 
-        message: "Failed to generate chat response", 
-        error: error.message || String(error)
+      res.status(500).json({
+        message: "Failed to generate chat response",
+        error: error.message || String(error),
       });
     }
   });
@@ -217,7 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userRecord = await admin.auth().getUserByEmail(email);
 
       // Get sign-in methods
-      const providerData = userRecord.providerData.map(provider => provider.providerId);
+      const providerData = userRecord.providerData.map(
+        (provider) => provider.providerId,
+      );
 
       res.json({
         email,
@@ -225,18 +146,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providers: providerData,
         emailVerified: userRecord.emailVerified,
         disabled: userRecord.disabled,
-        metadata: userRecord.metadata
+        metadata: userRecord.metadata,
       });
-
     } catch (error: any) {
       console.error("Error fetching auth methods:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: error.message,
-        code: error.code 
+        code: error.code,
       });
     }
   });
-
 
   // Subscribe to newsletter
   app.post("/api/newsletter", async (req: Request, res: Response) => {
@@ -244,45 +163,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertNewsletterSchema.safeParse(req.body);
 
       if (!validatedData.success) {
-        console.error("Newsletter validation error:", validatedData.error.format());
+        console.error(
+          "Newsletter validation error:",
+          validatedData.error.format(),
+        );
         return res.status(400).json({ message: "Invalid email" });
       }
 
       console.log("Attempting to subscribe email:", validatedData.data.email);
 
-      const newsletter = await db.subscribeToNewsletter(validatedData.data.email);
-      console.log("Subscription successful, created newsletter entry:", newsletter);
+      const newsletter = await db.subscribeToNewsletter(
+        validatedData.data.email,
+      );
+      console.log(
+        "Subscription successful, created newsletter entry:",
+        newsletter,
+      );
 
       // Try to send a welcome email to the subscriber
       try {
         if (!process.env.RESEND_API_KEY) {
-          console.error('RESEND_API_KEY is not set');
-          throw new Error('RESEND_API_KEY is not configured');
+          console.error("RESEND_API_KEY is not set");
+          throw new Error("RESEND_API_KEY is not configured");
         }
 
         let emailToUse = validatedData.data.email;
-        console.log('Original email:', emailToUse);
-        console.log('NODE_ENV:', process.env.NODE_ENV);
-        console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
+        console.log("Original email:", emailToUse);
+        console.log("NODE_ENV:", process.env.NODE_ENV);
+        console.log("RESEND_API_KEY present:", !!process.env.RESEND_API_KEY);
 
-        if (emailToUse.endsWith('@example.com') || !emailToUse.includes('@') || process.env.NODE_ENV === 'development') {
-          console.log('Using test email for Resend in development environment');
-          emailToUse = 'delivered@resend.dev';
+        if (
+          emailToUse.endsWith("@example.com") ||
+          !emailToUse.includes("@") ||
+          process.env.NODE_ENV === "development"
+        ) {
+          console.log("Using test email for Resend in development environment");
+          emailToUse = "delivered@resend.dev";
         }
-        console.log('Final email to use:', emailToUse);
+        console.log("Final email to use:", emailToUse);
 
         const emailSent = await sendTestEmail(emailToUse);
-        console.log('Email send attempt response:', emailSent);
+        console.log("Email send attempt response:", emailSent);
         if (!emailSent) {
-          throw new Error('Email sending failed');
+          throw new Error("Email sending failed");
         }
-        console.log('Welcome email successfully sent to:', emailToUse);
+        console.log("Welcome email successfully sent to:", emailToUse);
       } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
+        console.error("Failed to send welcome email:", emailError);
         // Still store the subscription but notify about email failure
-        res.status(201).json({ 
-          ...newsletter, 
-          warning: "Subscription saved but welcome email could not be sent" 
+        res.status(201).json({
+          ...newsletter,
+          warning: "Subscription saved but welcome email could not be sent",
         });
         return;
       }
@@ -304,8 +235,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       instructions: z.string().optional(),
       mealType: z.string().optional(),
       prepTime: z.number().optional(),
-      servings: z.number().optional()
-    })
+      servings: z.number().optional(),
+    }),
   });
 
   app.post("/api/email/recipe", async (req: Request, res: Response) => {
@@ -313,9 +244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = emailRecipeSchema.safeParse(req.body);
 
       if (!validatedData.success) {
-        return res.status(400).json({ 
-          message: "Invalid email data", 
-          errors: validatedData.error.format() 
+        return res.status(400).json({
+          message: "Invalid email data",
+          errors: validatedData.error.format(),
         });
       }
 
@@ -323,14 +254,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // For test environments, ensure we use a valid test email for Resend
       // In production this check would be removed
-      if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
-        console.log('Using test email for Resend in development environment');
-        email = 'delivered@resend.dev';
+      if (
+        email.endsWith("@example.com") ||
+        process.env.NODE_ENV === "development"
+      ) {
+        console.log("Using test email for Resend in development environment");
+        email = "delivered@resend.dev";
       }
 
       const success = await sendRecipeEmail({
         ...validatedData.data,
-        recipientEmail: email
+        recipientEmail: email,
       });
 
       if (!success) {
@@ -346,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Send test email
   const testEmailSchema = z.object({
-    email: z.string().email()
+    email: z.string().email(),
   });
 
   app.post("/api/email/test", async (req: Request, res: Response) => {
@@ -354,9 +288,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = testEmailSchema.safeParse(req.body);
 
       if (!validatedData.success) {
-        return res.status(400).json({ 
-          message: "Invalid email", 
-          errors: validatedData.error.format() 
+        return res.status(400).json({
+          message: "Invalid email",
+          errors: validatedData.error.format(),
         });
       }
 
@@ -364,9 +298,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // For test environments, ensure we use a valid test email for Resend
       // In production this check would be removed
-      if (email.endsWith('@example.com') || process.env.NODE_ENV === 'development') {
-        console.log('Using test email for Resend in development environment');
-        email = 'delivered@resend.dev';
+      if (
+        email.endsWith("@example.com") ||
+        process.env.NODE_ENV === "development"
+      ) {
+        console.log("Using test email for Resend in development environment");
+        email = "delivered@resend.dev";
       }
 
       const success = await sendTestEmail(email);
