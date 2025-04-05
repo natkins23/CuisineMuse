@@ -1,4 +1,4 @@
-(req.params.id);
+const recipeId = Number(req.params.id);
       const userId = req.body.userId;
 
       if (!userId) {
