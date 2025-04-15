@@ -179,19 +179,32 @@ export async function saveRecipe(recipeId: number, userId: number): Promise<{ me
   try {
     console.log(`Attempting to save recipe ID ${recipeId} for user ID ${userId}`);
     
-    const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
+    // Create direct POST request without using apiRequest
+    const url = `/api/recipes/${recipeId}/save`;
+    const requestBody = JSON.stringify({ userId });
+    
+    console.log("Request URL:", url);
+    console.log("Request body:", requestBody);
+    
+    const res = await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ userId }),
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: requestBody,
+      credentials: "include"
     });
     
+    if (!res.ok) {
+      throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+    }
+    
+    const response = await res.json();
     console.log("Save recipe response:", response);
     return response;
   } catch (error: any) {
     console.error("Error saving recipe:", error);
-    throw new Error("Failed to save recipe. Please try again.");
+    throw new Error(`Failed to save recipe: ${error.message}`);
   }
 }
 
@@ -202,18 +215,31 @@ export async function unsaveRecipe(recipeId: number, userId: number): Promise<{ 
   try {
     console.log(`Attempting to unsave recipe ID ${recipeId} for user ID ${userId}`);
     
-    const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
+    // Create direct DELETE request without using apiRequest
+    const url = `/api/recipes/${recipeId}/save`;
+    const requestBody = JSON.stringify({ userId });
+    
+    console.log("Request URL:", url);
+    console.log("Request body:", requestBody);
+    
+    const res = await fetch(url, {
       method: "DELETE",
-      body: JSON.stringify({ userId }),
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: requestBody,
+      credentials: "include"
     });
     
+    if (!res.ok) {
+      throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+    }
+    
+    const response = await res.json();
     console.log("Unsave recipe response:", response);
     return response;
   } catch (error: any) {
     console.error("Error removing saved recipe:", error);
-    throw new Error("Failed to remove recipe from saved recipes. Please try again.");
+    throw new Error(`Failed to remove recipe from saved recipes: ${error.message}`);
   }
 }

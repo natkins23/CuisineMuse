@@ -74,9 +74,24 @@ export function registerRoutes(app: Express, db: IStorage) {
   app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
       const recipeId = Number(req.params.id);
-      const { userId } = req.body;
+      console.log("Raw request body:", req.body, typeof req.body);
+      
+      // Handle different types of request body formats
+      let userId;
+      if (typeof req.body === 'string') {
+        try {
+          const parsedBody = JSON.parse(req.body);
+          userId = parsedBody.userId;
+          console.log("Parsed userId from string body:", userId);
+        } catch (parseError) {
+          console.error("Failed to parse request body as JSON:", parseError);
+        }
+      } else if (req.body && typeof req.body === 'object') {
+        userId = req.body.userId;
+        console.log("Retrieved userId from object body:", userId);
+      }
 
-      console.log(`Server received save recipe request for recipe ${recipeId} and user ${userId}`, req.body);
+      console.log(`Server received save recipe request for recipe ${recipeId} and user ${userId}`);
 
       if (!userId) {
         console.log("Missing userId in request body");
@@ -110,9 +125,24 @@ export function registerRoutes(app: Express, db: IStorage) {
   app.delete("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
       const recipeId = Number(req.params.id);
-      const { userId } = req.body;
+      console.log("Raw request body:", req.body, typeof req.body);
+      
+      // Handle different types of request body formats
+      let userId;
+      if (typeof req.body === 'string') {
+        try {
+          const parsedBody = JSON.parse(req.body);
+          userId = parsedBody.userId;
+          console.log("Parsed userId from string body:", userId);
+        } catch (parseError) {
+          console.error("Failed to parse request body as JSON:", parseError);
+        }
+      } else if (req.body && typeof req.body === 'object') {
+        userId = req.body.userId;
+        console.log("Retrieved userId from object body:", userId);
+      }
 
-      console.log(`Server received unsave recipe request for recipe ${recipeId} and user ${userId}`, req.body);
+      console.log(`Server received unsave recipe request for recipe ${recipeId} and user ${userId}`);
 
       if (!userId) {
         console.log("Missing userId in request body");
