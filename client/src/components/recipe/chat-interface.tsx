@@ -419,7 +419,7 @@ export default function ChatInterface() {
                         size="sm" 
                         variant="outline" 
                         className="flex items-center text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={() => handleSaveRecipe(message.recipe.recipeData)}
+                        onClick={() => message.recipe?.recipeData && handleSaveRecipe(message.recipe.recipeData)}
                         disabled={isSavingRecipe || !currentUser}
                       >
                         {isSavingRecipe ? (
@@ -434,7 +434,7 @@ export default function ChatInterface() {
                         size="sm" 
                         variant="outline" 
                         className="flex items-center text-blue-600 border-blue-200 hover:bg-blue-50"
-                        onClick={() => handleEmailRecipe(message.recipe.recipeData)}
+                        onClick={() => message.recipe?.recipeData && handleEmailRecipe(message.recipe.recipeData)}
                         disabled={isEmailingRecipe || !currentUser?.email}
                       >
                         {isEmailingRecipe ? (

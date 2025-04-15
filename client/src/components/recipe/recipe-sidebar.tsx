@@ -30,11 +30,16 @@ export default function RecipeSidebar({ onSelectRecipe, selectedRecipeId }: Reci
         
         // Convert the Firebase UID to a numeric ID
         // For Firebase auth users, we'll use the last 4 chars of UID converted to an integer
-        const userId = currentUser.uid ? 
-          parseInt(currentUser.uid.slice(-4), 16) % 1000 || 1 : 1;
+        const uid = currentUser.uid;
+        const userId = uid ? 
+          parseInt(uid.slice(-4), 16) % 1000 || 1 : 1;
           
-        console.log('Using user ID for saved recipes:', userId);
-        return await getSavedRecipes(userId);
+        console.log('Firebase UID:', uid);
+        console.log('Converted to numeric user ID for saved recipes:', userId);
+        
+        const recipes = await getSavedRecipes(userId);
+        console.log('Fetched saved recipes:', recipes);
+        return recipes;
       } catch (error) {
         console.error('Error fetching saved recipes:', error);
         throw error;

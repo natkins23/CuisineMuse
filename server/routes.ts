@@ -11,20 +11,31 @@ import admin from "./firebase-admin";
 export function registerRoutes(app: Express, db: IStorage) {
   // Helper function to ensure a user exists
   async function ensureUserExists(userId: number) {
+    console.log(`ensureUserExists called with userId: ${userId}`);
     let user = await db.getUser(userId);
+    console.log(`db.getUser returned:`, user);
+    
     if (!user) {
       // Create a new user if one doesn't exist
       console.log(`Creating new user with ID: ${userId}`);
-      // The database expects username, password, and optionally email
-      user = await db.createUser({
-        username: `user${userId}`,
-        password: `password${userId}`, // This is just a placeholder since we're using Firebase auth
-        email: `user${userId}@example.com`
-      });
-      
-      // After creation, update with savedRecipes array
-      if (user) {
-        user = await db.updateUser(user.id, { savedRecipes: [] }) || user;
+      try {
+        // The database expects username, password, and optionally email
+        user = await db.createUser({
+          username: `user${userId}`,
+          password: `password${userId}`, // This is just a placeholder since we're using Firebase auth
+          email: `user${userId}@example.com`
+        });
+        console.log(`User created:`, user);
+        
+        // After creation, update with savedRecipes array
+        if (user) {
+          console.log(`Updating user ${user.id} with empty savedRecipes array`);
+          user = await db.updateUser(user.id, { savedRecipes: [] }) || user;
+          console.log(`User updated:`, user);
+        }
+      } catch (error) {
+        console.error(`Error creating or updating user:`, error);
+        throw error;
       }
     }
     return user;
@@ -34,9 +45,12 @@ export function registerRoutes(app: Express, db: IStorage) {
   app.get("/api/users/:id/saved-recipes", async (req: Request, res: Response) => {
     try {
       const userId = Number(req.params.id);
+      console.log(`GET /api/users/${userId}/saved-recipes`);
       
       // Ensure user exists
+      console.log(`Checking if user ${userId} exists...`);
       const user = await ensureUserExists(userId);
+      console.log(`After ensureUserExists, user:`, user);
       
       const savedRecipeIds = user.savedRecipes || [];
       const savedRecipes = [];
