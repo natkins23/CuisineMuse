@@ -9,15 +9,34 @@ import { defaultLimiter, aiLimiter, authLimiter } from "./middleware/rate-limit"
 import admin from "./firebase-admin";
 
 export function registerRoutes(app: Express, db: IStorage) {
+  // Helper function to ensure a user exists
+  async function ensureUserExists(userId: number) {
+    let user = await db.getUser(userId);
+    if (!user) {
+      // Create a new user if one doesn't exist
+      console.log(`Creating new user with ID: ${userId}`);
+      // The database expects username, password, and optionally email
+      user = await db.createUser({
+        username: `user${userId}`,
+        password: `password${userId}`, // This is just a placeholder since we're using Firebase auth
+        email: `user${userId}@example.com`
+      });
+      
+      // After creation, update with savedRecipes array
+      if (user) {
+        user = await db.updateUser(user.id, { savedRecipes: [] }) || user;
+      }
+    }
+    return user;
+  }
+
   // Get user's saved recipes
   app.get("/api/users/:id/saved-recipes", async (req: Request, res: Response) => {
     try {
       const userId = Number(req.params.id);
       
-      const user = await db.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Ensure user exists
+      const user = await ensureUserExists(userId);
       
       const savedRecipeIds = user.savedRecipes || [];
       const savedRecipes = [];
@@ -37,22 +56,6 @@ export function registerRoutes(app: Express, db: IStorage) {
   });
 
   // Save recipe
-  // Helper function to ensure a user exists
-  async function ensureUserExists(userId: number) {
-    let user = await db.getUser(userId);
-    if (!user) {
-      // Create a new user if one doesn't exist
-      console.log(`Creating new user with ID: ${userId}`);
-      user = await db.createUser({
-        id: userId,
-        displayName: `User-${userId}`,
-        email: `user${userId}@example.com`,
-        username: `user${userId}`,
-        savedRecipes: []
-      });
-    }
-    return user;
-  }
 
   app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
