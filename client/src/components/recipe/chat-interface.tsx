@@ -5,7 +5,14 @@ import SuggestionChip from "@/components/ui/suggestion-chip-updated";
 import RateLimitNotification from "@/components/ui/rate-limit-notification";
 import { Zap, User, FileDown, Loader2, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChatMessage, sendChatMessage, EmailRecipeRequest, sendRecipeByEmail } from "@/lib/recipeApi";
+import { 
+  ChatMessage, 
+  sendChatMessage, 
+  EmailRecipeRequest, 
+  sendRecipeByEmail,
+  saveRecipe,
+  getSavedRecipes
+} from "@/lib/recipeApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
@@ -269,10 +276,19 @@ export default function ChatInterface() {
   };
 
   const handleSaveRecipe = async (recipe: any) => {
-    if (!currentUser || !recipe) return;
+    if (!currentUser || !recipe) {
+      console.log("Cannot save recipe - missing user or recipe data", { currentUser, recipe });
+      return;
+    }
 
     try {
       setIsSavingRecipe(true);
+      console.log("Saving recipe:", recipe);
+
+      // Convert the Firebase UID to a numeric ID
+      const uid = currentUser.uid;
+      const userId = uid ? parseInt(uid.slice(-4), 16) % 1000 || 1 : 1;
+      console.log("Converted user ID for saving recipe:", userId);
 
       const recipeData = {
         title: recipe.title,
@@ -282,15 +298,25 @@ export default function ChatInterface() {
         mealType: recipe.mealType || "",
         prepTime: recipe.prepTime || 0,
         servings: recipe.servings || 0,
+        userId: userId // Include the userId
       };
 
-      await apiRequest('/api/recipes', {
+      const createRecipeResponse = await apiRequest('/api/recipes', {
         method: 'POST',
         body: JSON.stringify(recipeData),
       });
+      
+      console.log("Recipe created response:", createRecipeResponse);
+      
+      if (createRecipeResponse && createRecipeResponse.id) {
+        // Now save this recipe to the user's saved recipes
+        const saveResponse = await saveRecipe(createRecipeResponse.id, userId);
+        console.log("Recipe saved to user:", saveResponse);
+      }
 
-      // Invalidate the recipes query to refresh the sidebar
+      // Invalidate both recipe queries to refresh the sidebar
       queryClient.invalidateQueries({ queryKey: ['/api/recipes'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/saved-recipes', currentUser.uid] });
 
       toast({
         title: "Recipe Saved!",
