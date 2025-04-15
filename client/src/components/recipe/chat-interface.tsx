@@ -132,8 +132,20 @@ export default function ChatInterface() {
           selectedDietaryOptions.map(d => d.toLowerCase()).join(", ") : undefined
       });
 
-      // Add AI response to chat
-      setMessages([...newMessages, response.message]);
+      // Log the full response to see what we're getting from Gemini
+      console.log("FULL GEMINI RESPONSE:", JSON.stringify(response, null, 2));
+      
+      // Add AI response to chat with recipe data if available
+      const messageWithRecipe = {...response.message};
+      if (response.recipe) {
+        console.log("Recipe data found:", response.recipe);
+        messageWithRecipe.recipe = response.recipe;
+      } else {
+        console.log("No recipe data found in response");
+      }
+      
+      setMessages([...newMessages, messageWithRecipe]);
+      
       // Increment generation count on server and update UI
       const genResponse = await fetch('/api/generations/increment');
       const genData = await genResponse.json();
@@ -474,7 +486,7 @@ export default function ChatInterface() {
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Button 
                         size="sm" 
-                        variant="primary" 
+                        variant="default" 
                         className="flex items-center bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => message.recipe?.recipeData && handleSaveRecipe(message.recipe.recipeData)}
                         disabled={isSavingRecipe || !currentUser}
