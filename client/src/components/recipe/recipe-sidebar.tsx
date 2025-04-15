@@ -6,6 +6,7 @@ import { getSavedRecipes, GeneratedRecipe } from '@/lib/recipeApi';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 
 interface RecipeSidebarProps {
   onSelectRecipe: (recipe: GeneratedRecipe) => void;
@@ -15,6 +16,19 @@ interface RecipeSidebarProps {
 export default function RecipeSidebar({ onSelectRecipe, selectedRecipeId }: RecipeSidebarProps) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  // Add Recipe Handler Function
+  const handleAddRecipe = () => {
+    // Navigate to the chat interface to create a new recipe
+    onSelectRecipe(null as any);
+    
+    // Show a toast to guide the user
+    toast({
+      title: "Create New Recipe",
+      description: "Use the chat interface to create a new recipe",
+      duration: 5000
+    });
+  };
   
   const { 
     data: savedRecipes,
@@ -60,7 +74,18 @@ export default function RecipeSidebar({ onSelectRecipe, selectedRecipeId }: Reci
   if (isLoading) {
     return (
       <div className="w-full h-full p-4 border-r">
-        <h2 className="text-xl font-bold mb-4">Saved Recipes</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Saved Recipes</h2>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="flex items-center gap-1" 
+            onClick={handleAddRecipe}
+          >
+            <Plus className="h-4 w-4" />
+            Add Recipe
+          </Button>
+        </div>
         <div className="space-y-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-2">
@@ -75,7 +100,18 @@ export default function RecipeSidebar({ onSelectRecipe, selectedRecipeId }: Reci
 
   return (
     <div className="w-full h-full p-4 border-r">
-      <h2 className="text-xl font-bold mb-4">Saved Recipes</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Saved Recipes</h2>
+        <Button 
+          variant="secondary" 
+          size="sm" 
+          className="flex items-center gap-1" 
+          onClick={handleAddRecipe}
+        >
+          <Plus className="h-4 w-4" />
+          Add Recipe
+        </Button>
+      </div>
       
       {(!savedRecipes || savedRecipes.length === 0) ? (
         <div className="text-center py-8 text-muted-foreground">
