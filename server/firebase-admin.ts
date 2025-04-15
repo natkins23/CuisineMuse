@@ -1,39 +1,25 @@
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import { NextFunction, Request, Response } from 'express';
 
 // Initialize Firebase Admin SDK
-// Note: In Replit, we can use the FIREBASE_SERVICE_ACCOUNT environment variable
-// which contains the service account key JSON
-let serviceAccount;
+// Let's make Firebase configuration more resilient
+// We'll use a simplified approach without relying on service account JSON parsing
 
+// Initialize the app with project ID and default credentials
 try {
-  // Try to parse the service account from environment variable
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  } else {
-    // For development, fall back to auto-initialization
-    console.warn("FIREBASE_SERVICE_ACCOUNT not found, using application default credentials");
+  // Check if we already have an initialized app
+  try {
+    admin.app();
+    console.log("Firebase Admin SDK already initialized");
+  } catch (e) {
+    // App not initialized, let's initialize it
+    admin.initializeApp({
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+    });
+    console.log("Firebase Admin SDK initialized successfully");
   }
-} catch (error) {
-  console.error("Error parsing FIREBASE_SERVICE_ACCOUNT:", error);
-}
-
-// Initialize the app with a workaround for checking if already initialized
-try {
-  const config: admin.AppOptions = {
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  };
-  
-  if (serviceAccount) {
-    config.credential = admin.credential.cert(serviceAccount);
-  }
-  
-  admin.initializeApp(config);
 } catch (error: any) {
-  // If already initialized, this error will be thrown
-  if (error.code !== 'app/duplicate-app') {
-    console.error("Error initializing Firebase Admin:", error);
-  }
+  console.error("Error initializing Firebase Admin:", error);
 }
 
 // Export the admin SDK
