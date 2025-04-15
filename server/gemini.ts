@@ -4,10 +4,17 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 if (!process.env.GEMINI_API_KEY) {
   console.error("GEMINI_API_KEY environment variable is not set");
 }
+console.log("Initializing Gemini AI with API key (length):", process.env.GEMINI_API_KEY?.length || 0);
+
+// Create a new instance of the Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Create a model for chat conversations - using gemini-2.0-flash which is the latest model
-const chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+// Use gemini-pro model as fallback if the flash version isn't working
+const MODEL_NAME = "gemini-pro"; 
+console.log("Using Gemini model:", MODEL_NAME);
+
+// Create a model for chat conversations
+const chatModel = genAI.getGenerativeModel({ model: MODEL_NAME });
 
 // Interface for chat messages
 export interface ChatMessage {
@@ -287,8 +294,8 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
       "servings": number of servings (number only)
     }`;
 
-    // Generate content using the latest Gemini 2.0 model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Generate content using the stable model
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
     
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
