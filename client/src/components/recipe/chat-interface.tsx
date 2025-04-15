@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SuggestionChip from "@/components/ui/suggestion-chip-updated";
 import RateLimitNotification from "@/components/ui/rate-limit-notification";
-import { Zap, User, FileDown, Loader2, Save } from "lucide-react";
+import { Zap, User, FileDown, Loader2, Save, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChatMessage, 
@@ -11,12 +11,14 @@ import {
   EmailRecipeRequest, 
   sendRecipeByEmail,
   saveRecipe,
-  getSavedRecipes
+  getSavedRecipes,
+  GeneratedRecipe
 } from "@/lib/recipeApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import RecipeDetailsModal from "./recipe-details-modal";
 
 // Demo suggestion categories
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
@@ -42,6 +44,10 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingRecipe, setIsSavingRecipe] = useState(false);
   const [isEmailingRecipe, setIsEmailingRecipe] = useState(false);
+  
+  // Recipe details modal state
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Partial<GeneratedRecipe> | null>(null);
 
   // Track selected options from each category
   const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
@@ -370,9 +376,34 @@ export default function ChatInterface() {
       setIsEmailingRecipe(false);
     }
   };
+  
+  // Handle opening the recipe details modal
+  const handleViewRecipeDetails = (recipe: Partial<GeneratedRecipe>) => {
+    setSelectedRecipe(recipe);
+    setIsRecipeModalOpen(true);
+  };
+  
+  // Handle closing the recipe details modal
+  const handleCloseRecipeModal = () => {
+    setIsRecipeModalOpen(false);
+    setSelectedRecipe(null);
+  };
 
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
+      {/* Recipe details modal */}
+      <RecipeDetailsModal
+        recipe={selectedRecipe}
+        isOpen={isRecipeModalOpen}
+        onClose={handleCloseRecipeModal}
+        onSave={handleSaveRecipe}
+        onEmail={handleEmailRecipe}
+        isSaving={isSavingRecipe}
+        isEmailing={isEmailingRecipe}
+        currentUserEmail={currentUser?.email}
+        isAuthenticated={!!currentUser}
+      />
+      
       {/* Rate limit notification */}
       {showRateLimitNotification && (
         <RateLimitNotification 
@@ -454,6 +485,16 @@ export default function ChatInterface() {
                           <Save className="h-3.5 w-3.5 mr-1" />
                         )}
                         Save recipe
+                      </Button>
+
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex items-center text-purple-600 border-purple-200 hover:bg-purple-50"
+                        onClick={() => message.recipe?.recipeData && handleViewRecipeDetails(message.recipe.recipeData)}
+                      >
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        View Details
                       </Button>
 
                       <Button 
