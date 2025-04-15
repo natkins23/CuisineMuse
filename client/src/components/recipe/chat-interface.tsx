@@ -474,8 +474,8 @@ export default function ChatInterface() {
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Button 
                         size="sm" 
-                        variant="outline" 
-                        className="flex items-center text-green-600 border-green-200 hover:bg-green-50"
+                        variant="primary" 
+                        className="flex items-center bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => message.recipe?.recipeData && handleSaveRecipe(message.recipe.recipeData)}
                         disabled={isSavingRecipe || !currentUser}
                       >
@@ -484,7 +484,7 @@ export default function ChatInterface() {
                         ) : (
                           <Save className="h-3.5 w-3.5 mr-1" />
                         )}
-                        Save recipe
+                        Add Recipe
                       </Button>
 
                       <Button 
