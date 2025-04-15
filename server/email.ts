@@ -1,10 +1,10 @@
 import { Resend } from 'resend';
 
-if (!process.env.RESEND_API_KEY) {
-  console.error('RESEND_API_KEY environment variable is not set');
+function getResendClient(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error('RESEND_API_KEY is not configured');
+  return new Resend(key);
 }
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface RecipeEmailData {
   recipientEmail: string;
@@ -21,9 +21,7 @@ interface RecipeEmailData {
 
 export async function sendTestEmail(email: string, name?: string): Promise<boolean> {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
+    const resend = getResendClient();
 
     console.log('Attempting to send test email via Resend to:', email);
 
@@ -71,9 +69,7 @@ export async function sendTestEmail(email: string, name?: string): Promise<boole
 
 export async function sendNewsletterEmail(email: string): Promise<boolean> {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
+    const resend = getResendClient();
 
     console.log('Attempting to send newsletter welcome email via Resend to:', email);
 
@@ -116,9 +112,7 @@ export async function sendNewsletterEmail(email: string): Promise<boolean> {
 
 export async function sendRecipeEmail(data: RecipeEmailData): Promise<boolean> {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
+    const resend = getResendClient();
 
     const { recipe, recipientEmail } = data;
 

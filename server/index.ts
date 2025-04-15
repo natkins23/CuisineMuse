@@ -3,6 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "http";
 import { storage } from "./storage";
+import dotenv from "dotenv";
+dotenv.config()
 
 const app = express();
 // Enable trust proxy - needed for express-rate-limit to work correctly with Replit
