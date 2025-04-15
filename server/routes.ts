@@ -37,6 +37,23 @@ export function registerRoutes(app: Express, db: IStorage) {
   });
 
   // Save recipe
+  // Helper function to ensure a user exists
+  async function ensureUserExists(userId: number) {
+    let user = await db.getUser(userId);
+    if (!user) {
+      // Create a new user if one doesn't exist
+      console.log(`Creating new user with ID: ${userId}`);
+      user = await db.createUser({
+        id: userId,
+        displayName: `User-${userId}`,
+        email: `user${userId}@example.com`,
+        username: `user${userId}`,
+        savedRecipes: []
+      });
+    }
+    return user;
+  }
+
   app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
       const recipeId = Number(req.params.id);
@@ -46,10 +63,8 @@ export function registerRoutes(app: Express, db: IStorage) {
         return res.status(401).json({ message: "User must be logged in" });
       }
 
-      const user = await db.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Ensure user exists
+      let user = await ensureUserExists(userId);
 
       // Add recipe to user's saved recipes
       const savedRecipes = user.savedRecipes || [];
@@ -75,10 +90,8 @@ export function registerRoutes(app: Express, db: IStorage) {
         return res.status(401).json({ message: "User must be logged in" });
       }
 
-      const user = await db.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Ensure user exists
+      let user = await ensureUserExists(userId);
 
       // Remove recipe from user's saved recipes
       const savedRecipes = user.savedRecipes || [];

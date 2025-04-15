@@ -27,9 +27,14 @@ export default function RecipeSidebar({ onSelectRecipe, selectedRecipeId }: Reci
     queryFn: async () => {
       try {
         if (!currentUser?.uid) return [];
-        // For now, we'll use user ID 1 since we're using in-memory storage
-        // In a real app, you'd use currentUser.uid or a mapping from Firebase UID to your database ID
-        return await getSavedRecipes(1);
+        
+        // Convert the Firebase UID to a numeric ID
+        // For Firebase auth users, we'll use the last 4 chars of UID converted to an integer
+        const userId = currentUser.uid ? 
+          parseInt(currentUser.uid.slice(-4), 16) % 1000 || 1 : 1;
+          
+        console.log('Using user ID for saved recipes:', userId);
+        return await getSavedRecipes(userId);
       } catch (error) {
         console.error('Error fetching saved recipes:', error);
         throw error;
