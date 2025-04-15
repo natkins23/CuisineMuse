@@ -230,9 +230,25 @@ DO NOT include any JSON code blocks syntax like \`\`\`json or \`\`\` in your res
     }
     
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating chat response with Gemini:", error);
-    throw new Error("Failed to generate response. Please try again.");
+    
+    // Check if this is an API key issue
+    if (error.errorDetails && 
+        Array.isArray(error.errorDetails) && 
+        error.errorDetails.some((detail: any) => 
+          detail.reason === "API_KEY_INVALID" || 
+          detail.message?.includes("API key expired"))) {
+      
+      throw new Error("API key has expired. Please contact support to renew the API key.");
+    }
+    
+    // Return a more specific error if possible
+    if (error.message) {
+      throw new Error(`AI service error: ${error.message}`);
+    }
+    
+    throw new Error("Failed to generate response. Please try again later.");
   }
 }
 
@@ -325,8 +341,24 @@ export async function generateRecipe(options: RecipeGenerationOptions): Promise<
     console.log(`Successfully generated recipe #${successfulGenerations}`);
     
     return recipe;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating recipe with Gemini:", error);
-    throw new Error("Failed to generate recipe. Please try again.");
+    
+    // Check if this is an API key issue
+    if (error.errorDetails && 
+        Array.isArray(error.errorDetails) && 
+        error.errorDetails.some((detail: any) => 
+          detail.reason === "API_KEY_INVALID" || 
+          detail.message?.includes("API key expired"))) {
+      
+      throw new Error("API key has expired. Please contact support to renew the API key.");
+    }
+    
+    // Return a more specific error if possible
+    if (error.message) {
+      throw new Error(`AI service error: ${error.message}`);
+    }
+    
+    throw new Error("Failed to generate recipe. Please try again later.");
   }
 }
