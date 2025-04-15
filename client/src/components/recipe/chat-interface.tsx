@@ -138,11 +138,32 @@ export default function ChatInterface() {
         // Show the rate limit notification
         setRateLimitMessage("You've reached the rate limit for AI requests. Please try again in a few minutes.");
         setShowRateLimitNotification(true);
-      } else {
+      } 
+      // Check for API key issues
+      else if (typeof error === 'object' && 
+              (error.message?.includes('API key') || 
+               error.message?.includes('key has expired'))) {
+        toast({
+          title: "API Service Unavailable",
+          description: "Our recipe AI service is currently unavailable. Please try again later or contact support.",
+          variant: "destructive",
+          duration: 6000
+        });
+      }
+      // Check for model not found issue
+      else if (typeof error === 'object' && error.message?.includes('model')) {
+        toast({
+          title: "AI Service Configuration Error",
+          description: "There's an issue with our AI service configuration. Our team has been notified.",
+          variant: "destructive",
+          duration: 5000
+        });
+      } 
+      else {
         // Show general error toast for other errors
         toast({
           title: "Error",
-          description: "Failed to get a response. Please try again.",
+          description: error.message || "Failed to get a response. Please try again.",
           variant: "destructive",
         });
       }

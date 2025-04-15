@@ -9,8 +9,9 @@ console.log("Initializing Gemini AI with API key (length):", process.env.GEMINI_
 // Create a new instance of the Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Use gemini-pro model as fallback if the flash version isn't working
-const MODEL_NAME = "gemini-pro"; 
+// Try different model names depending on the API version
+// The Google AI API underwent changes in how models are referenced
+const MODEL_NAME = "gemini-1.5-pro"; 
 console.log("Using Gemini model:", MODEL_NAME);
 
 // Create a model for chat conversations
