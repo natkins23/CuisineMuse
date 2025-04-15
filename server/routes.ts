@@ -74,26 +74,35 @@ export function registerRoutes(app: Express, db: IStorage) {
   app.post("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
       const recipeId = Number(req.params.id);
-      const userId = req.body.userId;
+      const { userId } = req.body;
+
+      console.log(`Server received save recipe request for recipe ${recipeId} and user ${userId}`, req.body);
 
       if (!userId) {
+        console.log("Missing userId in request body");
         return res.status(401).json({ message: "User must be logged in" });
       }
 
       // Ensure user exists
       let user = await ensureUserExists(userId);
+      console.log("User found:", user);
 
       // Add recipe to user's saved recipes
       const savedRecipes = user.savedRecipes || [];
+      console.log("Current saved recipes:", savedRecipes);
+      
       if (!savedRecipes.includes(recipeId)) {
         savedRecipes.push(recipeId);
         await db.updateUser(userId, { savedRecipes });
+        console.log("Updated saved recipes:", savedRecipes);
+      } else {
+        console.log("Recipe already saved");
       }
 
       res.json({ message: "Recipe saved successfully" });
     } catch (error) {
       console.error("Error saving recipe:", error);
-      res.status(500).json({ message: "Failed to save recipe" });
+      res.status(500).json({ message: "Failed to save recipe", error: String(error) });
     }
   });
   
@@ -101,28 +110,37 @@ export function registerRoutes(app: Express, db: IStorage) {
   app.delete("/api/recipes/:id/save", async (req: Request, res: Response) => {
     try {
       const recipeId = Number(req.params.id);
-      const userId = req.body.userId;
+      const { userId } = req.body;
+
+      console.log(`Server received unsave recipe request for recipe ${recipeId} and user ${userId}`, req.body);
 
       if (!userId) {
+        console.log("Missing userId in request body");
         return res.status(401).json({ message: "User must be logged in" });
       }
 
       // Ensure user exists
       let user = await ensureUserExists(userId);
+      console.log("User found:", user);
 
       // Remove recipe from user's saved recipes
       const savedRecipes = user.savedRecipes || [];
+      console.log("Current saved recipes:", savedRecipes);
+      
       const index = savedRecipes.indexOf(recipeId);
       
       if (index !== -1) {
         savedRecipes.splice(index, 1);
         await db.updateUser(userId, { savedRecipes });
+        console.log("Updated saved recipes after removal:", savedRecipes);
+      } else {
+        console.log("Recipe not found in saved recipes");
       }
 
       res.json({ message: "Recipe removed from saved recipes" });
     } catch (error) {
       console.error("Error removing saved recipe:", error);
-      res.status(500).json({ message: "Failed to remove recipe from saved recipes" });
+      res.status(500).json({ message: "Failed to remove recipe from saved recipes", error: String(error) });
     }
   });
 

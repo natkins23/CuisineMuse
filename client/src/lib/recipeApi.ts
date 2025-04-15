@@ -177,11 +177,17 @@ export async function getSavedRecipes(userId: number): Promise<GeneratedRecipe[]
  */
 export async function saveRecipe(recipeId: number, userId: number): Promise<{ message: string }> {
   try {
+    console.log(`Attempting to save recipe ID ${recipeId} for user ID ${userId}`);
+    
     const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
       method: "POST",
-      body: { userId } as any,
+      body: JSON.stringify({ userId }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     
+    console.log("Save recipe response:", response);
     return response;
   } catch (error: any) {
     console.error("Error saving recipe:", error);
@@ -194,11 +200,17 @@ export async function saveRecipe(recipeId: number, userId: number): Promise<{ me
  */
 export async function unsaveRecipe(recipeId: number, userId: number): Promise<{ message: string }> {
   try {
+    console.log(`Attempting to unsave recipe ID ${recipeId} for user ID ${userId}`);
+    
     const response = await apiRequest<{ message: string }>(`/api/recipes/${recipeId}/save`, {
       method: "DELETE",
-      body: { userId } as any,
+      body: JSON.stringify({ userId }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     
+    console.log("Unsave recipe response:", response);
     return response;
   } catch (error: any) {
     console.error("Error removing saved recipe:", error);
