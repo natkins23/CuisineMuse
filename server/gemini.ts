@@ -11,7 +11,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Try different model names depending on the API version
 // The Google AI API underwent changes in how models are referenced
-const MODEL_NAME = "gemini-1.5-pro"; 
+const MODEL_NAME = "gemini-2.0-flash"; 
 console.log("Using Gemini model:", MODEL_NAME);
 
 // Create a model for chat conversations
