@@ -319,16 +319,40 @@ export default function ChatInterface() {
         userId: userId // Include the userId
       };
 
-      const createRecipeResponse = await apiRequest('/api/recipes', {
+      // Step 1: Create the recipe
+      const createRecipeRes = await fetch('/api/recipes', {
         method: 'POST',
-        body: JSON.stringify(recipeData),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(recipeData)
       });
       
+      if (!createRecipeRes.ok) {
+        throw new Error(`Failed to create recipe: ${createRecipeRes.status} ${createRecipeRes.statusText}`);
+      }
+      
+      const createRecipeResponse = await createRecipeRes.json();
       console.log("Recipe created response:", createRecipeResponse);
       
       if (createRecipeResponse && createRecipeResponse.id) {
-        // Now save this recipe to the user's saved recipes
-        const saveResponse = await saveRecipe(createRecipeResponse.id, userId);
+        // Step 2: Save the recipe to user's saved recipes - direct implementation
+        const saveRecipeUrl = `/api/recipes/${createRecipeResponse.id}/save`;
+        console.log(`Saving recipe to user - URL: ${saveRecipeUrl}`);
+        
+        const saveRes = await fetch(saveRecipeUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId })
+        });
+        
+        if (!saveRes.ok) {
+          throw new Error(`Failed to save recipe: ${saveRes.status} ${saveRes.statusText}`);
+        }
+        
+        const saveResponse = await saveRes.json();
         console.log("Recipe saved to user:", saveResponse);
       }
 
